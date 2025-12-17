@@ -1,4 +1,5 @@
 # Spec-Driven Development
+
 ## O Guia Definitivo para Construir Produtos com IA
 
 ### Construindo o TaskFlow Pro do Zero
@@ -92,6 +93,7 @@ Claude não tem essa memória. Cada sessão começa do zero. Cada contexto é li
 Pense em especificações como um GPS para sua jornada de desenvolvimento.
 
 Sem GPS (sem specs):
+
 - Você sabe vagamente onde quer chegar
 - Toma decisões no momento
 - Às vezes encontra atalhos
@@ -99,6 +101,7 @@ Sem GPS (sem specs):
 - Gasta combustível (tempo) desnecessário
 
 Com GPS (com specs):
+
 - Destino claramente definido
 - Rota calculada considerando obstáculos
 - Recálculo automático quando algo muda
@@ -120,45 +123,49 @@ Diferente de metodologias tradicionais onde documentação é um artefato secund
 
 SDD se sustenta em quatro pilares fundamentais:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    SPEC-DRIVEN DEVELOPMENT                   │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   ┌──────────────┐    ┌──────────────┐                      │
-│   │  REQUIREMENTS │───▶│    DESIGN    │                      │
-│   │   (O QUÊ)     │    │   (COMO)     │                      │
-│   └──────────────┘    └──────────────┘                      │
-│          │                   │                               │
-│          │                   │                               │
-│          ▼                   ▼                               │
-│   ┌──────────────┐    ┌──────────────┐                      │
-│   │    TASKS     │◀───│IMPLEMENTATION│                      │
-│   │  (QUANTO)    │    │  (EXECUÇÃO)  │                      │
-│   └──────────────┘    └──────────────┘                      │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph SDD["SPEC-DRIVEN DEVELOPMENT"]
+        REQ["📋 REQUIREMENTS<br/>(O QUÊ)"]
+        DES["🏗️ DESIGN<br/>(COMO)"]
+        TSK["📝 TASKS<br/>(QUANTO)"]
+        IMP["⚙️ IMPLEMENTATION<br/>(EXECUÇÃO)"]
+        
+        REQ --> DES
+        DES --> TSK
+        TSK --> IMP
+        IMP -.->|feedback| REQ
+    end
+    
+    style REQ fill:#3b82f6,color:#fff
+    style DES fill:#8b5cf6,color:#fff
+    style TSK fill:#f59e0b,color:#fff
+    style IMP fill:#10b981,color:#fff
 ```
 
 **Pilar 1: Requirements (Requisitos)**
+
 - Define O QUÊ o sistema deve fazer
 - Escrito em linguagem de negócio
 - Focado em comportamentos observáveis
 - Independente de tecnologia
 
 **Pilar 2: Design (Projeto)**
+
 - Define COMO o sistema vai funcionar
 - Decisões arquiteturais
 - Escolhas tecnológicas justificadas
 - Modelos de dados e APIs
 
 **Pilar 3: Tasks (Tarefas)**
+
 - Define QUANTO trabalho existe
 - Decomposição em unidades implementáveis
 - Dependências e prioridades
 - Rastreabilidade para requisitos
 
 **Pilar 4: Implementation (Implementação)**
+
 - EXECUÇÃO seguindo as specs
 - Verificação contra critérios de aceitação
 - Documentação de decisões de implementação
@@ -168,11 +175,23 @@ SDD se sustenta em quatro pilares fundamentais:
 
 Um conceito crucial em SDD é o sistema de **gates** (portões) entre fases:
 
-```
-[Requirements] ──GATE 1──▶ [Design] ──GATE 2──▶ [Tasks] ──GATE 3──▶ [Code]
-      │                        │                    │                  │
-      └────── APROVAÇÃO ───────┴──── APROVAÇÃO ─────┴─── APROVAÇÃO ────┘
-              HUMANA                 HUMANA               HUMANA
+```mermaid
+flowchart LR
+    REQ[Requirements] -->|"🚪 GATE 1"| DES[Design]
+    DES -->|"🚪 GATE 2"| TSK[Tasks]
+    TSK -->|"🚪 GATE 3"| COD[Code]
+    
+    REQ ---|"✅ Aprovação<br/>Humana"| G1[" "]
+    DES ---|"✅ Aprovação<br/>Humana"| G2[" "]
+    TSK ---|"✅ Aprovação<br/>Humana"| G3[" "]
+    
+    style REQ fill:#3b82f6,color:#fff
+    style DES fill:#8b5cf6,color:#fff
+    style TSK fill:#f59e0b,color:#fff
+    style COD fill:#10b981,color:#fff
+    style G1 fill:transparent,stroke:transparent
+    style G2 fill:transparent,stroke:transparent
+    style G3 fill:transparent,stroke:transparent
 ```
 
 Cada gate representa um ponto de decisão humana. O agente de IA **não pode** avançar para a próxima fase sem aprovação explícita. Isso garante que:
@@ -197,6 +216,7 @@ SDD não é Waterfall disfarçado. A diferença crucial é que specs em SDD são
 ### 2.5 Quando Usar (e Quando Não Usar)
 
 **Use SDD quando:**
+
 - O projeto dura mais que alguns dias
 - Múltiplas features complexas estão envolvidas
 - Você trabalha com agentes de IA
@@ -205,6 +225,7 @@ SDD não é Waterfall disfarçado. A diferença crucial é que specs em SDD são
 - Múltiplas sessões de desenvolvimento serão necessárias
 
 **Considere alternativas quando:**
+
 - É um script simples de uma hora
 - Você está prototipando para descobrir requisitos
 - O escopo é trivial e bem conhecido
@@ -220,46 +241,41 @@ Para nosso projeto TaskFlow Pro, SDD é a escolha óbvia: temos autenticação, 
 
 Antes de escrever qualquer spec, precisamos de uma estrutura organizacional clara:
 
-```
-projeto/
-├── .claude/
-│   ├── commands/              # Comandos slash customizados
-│   │   ├── spec-new.md
-│   │   ├── spec-requirements.md
-│   │   ├── spec-design.md
-│   │   ├── spec-tasks.md
-│   │   └── spec-implement.md
-│   │
-│   ├── steering/              # Contexto persistente
-│   │   ├── product.md         # Visão do produto
-│   │   ├── tech-stack.md      # Decisões técnicas globais
-│   │   ├── conventions.md     # Padrões de código
-│   │   └── design-system.md   # UI/UX guidelines
-│   │
-│   ├── specs/                 # Especificações por feature
-│   │   ├── 001-auth/
-│   │   │   ├── requirements.md
-│   │   │   ├── design.md
-│   │   │   ├── tasks.md
-│   │   │   └── .status        # approved, in-progress, etc
-│   │   │
-│   │   ├── 002-workspaces/
-│   │   │   └── ...
-│   │   │
-│   │   └── 003-tasks-crud/
-│   │       └── ...
-│   │
-│   └── agents/                # Subagentes especializados
-│       ├── architect.md
-│       ├── implementer.md
-│       └── reviewer.md
-│
-├── CLAUDE.md                  # Instruções principais
-├── CLAUDE.local.md            # Preferências locais (gitignore)
-│
-├── apps/                      # Turborepo apps
-├── packages/                  # Turborepo packages
-└── ...
+```mermaid
+graph TD
+    ROOT[📁 projeto/] --> CLAUDE_DIR[📁 .claude/]
+    ROOT --> CLAUDE_MD[📄 CLAUDE.md]
+    ROOT --> APPS[📁 apps/]
+    ROOT --> PACKAGES[📁 packages/]
+    
+    CLAUDE_DIR --> COMMANDS[📁 commands/]
+    CLAUDE_DIR --> STEERING[📁 steering/]
+    CLAUDE_DIR --> SPECS[📁 specs/]
+    CLAUDE_DIR --> AGENTS[📁 agents/]
+    
+    COMMANDS --> C1[📄 spec-new.md]
+    COMMANDS --> C2[📄 spec-requirements.md]
+    COMMANDS --> C3[📄 spec-design.md]
+    
+    STEERING --> S1[📄 product.md]
+    STEERING --> S2[📄 tech-stack.md]
+    STEERING --> S3[📄 conventions.md]
+    
+    SPECS --> SP1[📁 001-auth/]
+    SPECS --> SP2[📁 002-workspaces/]
+    SPECS --> SP3[📁 003-tasks/]
+    
+    SP1 --> SP1A[📄 requirements.md]
+    SP1 --> SP1B[📄 design.md]
+    SP1 --> SP1C[📄 tasks.md]
+    
+    AGENTS --> A1[📄 architect.md]
+    AGENTS --> A2[📄 implementer.md]
+    AGENTS --> A3[📄 reviewer.md]
+    
+    style ROOT fill:#1e293b,color:#fff
+    style CLAUDE_DIR fill:#3b82f6,color:#fff
+    style SPECS fill:#8b5cf6,color:#fff
 ```
 
 ### 3.2 O Arquivo CLAUDE.md
@@ -584,30 +600,47 @@ automações inteligentes e sincronização em tempo real.
 # .claude/steering/tech-stack.md
 
 # Stack Tecnológica - TaskFlow Pro
-
-## Visão Geral
-
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        TURBOREPO                             │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   apps/     │  │  packages/  │  │      tooling/       │  │
-│  │             │  │             │  │                     │  │
-│  │  • web      │  │  • ui       │  │  • eslint-config    │  │
-│  │  • api      │  │  • database │  │  • typescript-config│  │
-│  │             │  │  • utils    │  │  • tailwind-config  │  │
-│  │             │  │  • email    │  │                     │  │
-│  │             │  │  • realtime │  │                     │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+
+```mermaid
+flowchart TB
+    subgraph TURBOREPO["🏗️ TURBOREPO"]
+        subgraph APPS["📦 apps/"]
+            WEB["🌐 web<br/>Next.js 14"]
+            API["⚡ api<br/>Fastify"]
+        end
+        
+        subgraph PACKAGES["📦 packages/"]
+            UI["🎨 ui<br/>shadcn/ui"]
+            DB["🗄️ database<br/>Prisma"]
+            UTILS["🔧 utils"]
+            EMAIL["📧 email<br/>React Email"]
+            RT["📡 realtime<br/>Socket.io types"]
+        end
+        
+        subgraph TOOLING["🛠️ tooling/"]
+            ESL["eslint-config"]
+            TSC["typescript-config"]
+            TWC["tailwind-config"]
+        end
+    end
+    
+    WEB --> UI
+    WEB --> UTILS
+    API --> DB
+    API --> UTILS
+    API --> EMAIL
+    
+    style TURBOREPO fill:#1e293b,color:#fff
+    style APPS fill:#3b82f6,color:#fff
+    style PACKAGES fill:#8b5cf6,color:#fff
+    style TOOLING fill:#64748b,color:#fff
 ```
 
 ## Apps
 
 ### apps/web (Frontend)
+
 - **Framework:** Next.js 14 (App Router)
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Estado:** React Query (server state) + Zustand (client state)
@@ -615,10 +648,11 @@ automações inteligentes e sincronização em tempo real.
 - **Real-time:** Socket.io client
 - **DnD:** @dnd-kit
 
-**Justificativa:** Next.js oferece SSR/SSG, App Router é o futuro, 
+**Justificativa:** Next.js oferece SSR/SSG, App Router é o futuro,
 shadcn/ui dá componentes acessíveis sem lock-in.
 
 ### apps/api (Backend)
+
 - **Framework:** Fastify
 - **ORM:** Prisma
 - **Validação:** Zod + @fastify/type-provider-zod
@@ -626,52 +660,8 @@ shadcn/ui dá componentes acessíveis sem lock-in.
 - **Real-time:** Socket.io server
 - **Queue:** BullMQ
 
-**Justificativa:** Fastify é mais rápido que Express, tem excelente 
+**Justificativa:** Fastify é mais rápido que Express, tem excelente
 suporte a TypeScript, e plugin ecosystem maduro.
-
-## Packages
-
-### packages/ui
-- Componentes compartilhados baseados em shadcn/ui
-- Exporta componentes customizados para o domínio
-
-### packages/database
-- Schema Prisma
-- Migrations
-- Seed scripts
-- Tipos exportados
-
-### packages/utils
-- Funções utilitárias compartilhadas
-- Validadores
-- Formatters (data, etc)
-
-### packages/email
-- Templates de email (React Email)
-- Serviço de envio (Resend)
-
-### packages/realtime
-- Tipos compartilhados de eventos
-- Helpers para pub/sub
-
-## Infraestrutura
-
-### Database
-- **Produção:** PostgreSQL (Neon ou Supabase)
-- **Dev:** PostgreSQL via Docker
-
-### Cache/Queue
-- **Produção:** Redis (Upstash)
-- **Dev:** Redis via Docker
-
-### Email
-- **Provider:** Resend
-- **Templates:** React Email
-
-### Deploy
-- **Frontend:** Vercel
-- **Backend:** Railway ou Render
-- **CI/CD:** GitHub Actions
 
 ## Versões Fixadas
 
@@ -694,28 +684,31 @@ suporte a TypeScript, e plugin ecosystem maduro.
 ## Decisões Arquiteturais
 
 ### Por que Turborepo?
+
 - Caching inteligente acelera builds
 - Workspace dependencies facilitam refactoring
 - Task orchestration para CI/CD
 
 ### Por que Fastify ao invés de Express?
+
 - 2-3x mais rápido
 - Suporte nativo a async/await
 - Schema validation built-in
 - Melhor TypeScript support
 
 ### Por que Socket.io ao invés de WebSocket puro?
+
 - Fallback automático para polling
 - Rooms para workspaces
 - Reconexão automática
 - Melhor DX
 
 ### Por que BullMQ para automações?
+
 - Retry automático
 - Delayed jobs
 - Rate limiting
 - Dashboard (Bull Board)
-```
 
 ---
 
@@ -811,6 +804,34 @@ O sistema DEVE registrar todas as tentativas de login para auditoria.
 # .claude/specs/001-auth/design.md
 
 # Design: Autenticação
+```
+
+### Fluxo de Autenticação
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 Usuário
+    participant F as 🌐 Frontend
+    participant A as ⚡ API
+    participant D as 🗄️ Database
+    participant E as 📧 Email
+    
+    Note over U,E: Registro
+    U->>F: Preenche formulário
+    F->>A: POST /auth/register
+    A->>D: Criar usuário
+    A->>E: Enviar email verificação
+    A->>F: 201 Created
+    F->>U: "Verifique seu email"
+    
+    Note over U,E: Login
+    U->>F: Email + Senha
+    F->>A: POST /auth/login
+    A->>D: Verificar credenciais
+    A->>D: Criar session
+    A->>F: accessToken + refreshToken
+    F->>U: Redirect para dashboard
+```
 
 ## Modelo de Dados
 
@@ -929,6 +950,7 @@ interface JWTPayload {
 ## Segurança
 
 ### Password Hashing
+
 ```typescript
 import bcrypt from 'bcrypt';
 const SALT_ROUNDS = 12;
@@ -939,13 +961,13 @@ async function hashPassword(password: string): Promise<string> {
 ```
 
 ### Rate Limiting
+
 ```typescript
 const rateLimiter = {
   loginByEmail: { points: 5, duration: 900 },
   loginByIP: { points: 10, duration: 900 },
   magicLinkByEmail: { points: 3, duration: 3600 }
 };
-```
 ```
 
 ```markdown
@@ -1105,6 +1127,48 @@ O sistema DEVE permitir transferir ownership do workspace.
 # .claude/specs/002-workspaces/design.md
 
 # Design: Workspaces
+```
+
+### Diagrama de Entidades
+
+```mermaid
+erDiagram
+    USER ||--o{ WORKSPACE_MEMBER : "pertence a"
+    WORKSPACE ||--o{ WORKSPACE_MEMBER : "tem"
+    WORKSPACE ||--o{ WORKSPACE_INVITE : "tem"
+    WORKSPACE ||--o{ TASK : "contém"
+    WORKSPACE ||--o{ TAG : "define"
+    
+    USER {
+        string id PK
+        string name
+        string email UK
+    }
+    
+    WORKSPACE {
+        string id PK
+        string name
+        string description
+        string icon
+        string color
+    }
+    
+    WORKSPACE_MEMBER {
+        string id PK
+        string workspaceId FK
+        string userId FK
+        enum role "ADMIN | MEMBER"
+    }
+    
+    WORKSPACE_INVITE {
+        string id PK
+        string workspaceId FK
+        string email
+        string token UK
+        enum role
+        datetime expiresAt
+    }
+```
 
 ## Modelo de Dados
 
@@ -1242,7 +1306,6 @@ async function checkWorkspaceAccess(
   
   return member;
 }
-```
 ```
 
 ```markdown
@@ -1412,6 +1475,30 @@ O sistema DEVE suportar drag-and-drop para reordenar.
 # .claude/specs/003-tasks/design.md
 
 # Design: Tarefas
+```
+
+### Diagrama de Estados da Tarefa
+
+```mermaid
+stateDiagram-v2
+    [*] --> TODO: Criar Tarefa
+    
+    TODO --> IN_PROGRESS: Iniciar
+    TODO --> DONE: Completar
+    TODO --> ARCHIVED: Arquivar
+    
+    IN_PROGRESS --> TODO: Pausar
+    IN_PROGRESS --> DONE: Completar
+    IN_PROGRESS --> ARCHIVED: Arquivar
+    
+    DONE --> TODO: Reabrir
+    DONE --> ARCHIVED: Arquivar
+    
+    ARCHIVED --> TODO: Restaurar
+    
+    DONE --> [*]
+    ARCHIVED --> [*]
+```
 
 ## Modelo de Dados
 
@@ -1636,7 +1723,6 @@ async function logActivity(
 // logActivity(taskId, userId, 'completed')
 // logActivity(taskId, userId, 'assigned', null, null, 'user_123')
 ```
-```
 
 ```markdown
 # .claude/specs/003-tasks/tasks.md
@@ -1820,10 +1906,12 @@ O sistema DEVE permitir condições nas automações (se tag = X).
 ## Exemplo de Automação
 
 ```
+
 Nome: "Auto-assign bugs"
 Trigger: Quando tarefa for criada
 Condição: Tag contém "bug"
-Action: Atribuir a "dev@empresa.com"
+Action: Atribuir a "<dev@empresa.com>"
+
 ```
 ```
 
@@ -1831,6 +1919,38 @@ Action: Atribuir a "dev@empresa.com"
 # .claude/specs/004-automations/design.md
 
 # Design: Automações
+```
+
+### Fluxo de Execução
+
+```mermaid
+flowchart LR
+    subgraph TRIGGER["🎯 Trigger"]
+        EVT[Evento<br/>task:created]
+    end
+    
+    subgraph QUEUE["📬 Queue"]
+        BQ[BullMQ]
+    end
+    
+    subgraph WORKER["⚙️ Worker"]
+        PROC[Processar]
+        COND{Condições?}
+        EXEC[Executar<br/>Action]
+        LOG[Registrar<br/>Execução]
+    end
+    
+    EVT --> BQ
+    BQ --> PROC
+    PROC --> COND
+    COND -->|Sim| EXEC
+    COND -->|Não| LOG
+    EXEC --> LOG
+    
+    style TRIGGER fill:#3b82f6,color:#fff
+    style QUEUE fill:#f59e0b,color:#fff
+    style WORKER fill:#10b981,color:#fff
+```
 
 ## Modelo de Dados
 
@@ -1932,21 +2052,6 @@ interface ActionConfig {
 }
 ```
 
-## Fluxo de Execução
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Event     │────▶│   Queue     │────▶│   Worker    │
-│  (trigger)  │     │  (BullMQ)   │     │  (process)  │
-└─────────────┘     └─────────────┘     └─────────────┘
-                                               │
-                                               ▼
-                                        ┌─────────────┐
-                                        │   Execute   │
-                                        │   Action    │
-                                        └─────────────┘
-```
-
 ## Prevenção de Loops
 
 ```typescript
@@ -1966,7 +2071,6 @@ function canExecute(context: AutomationContext, automationId: string): boolean {
   if (context.executedAutomations.includes(automationId)) return false;
   return true;
 }
-```
 ```
 
 ```markdown
@@ -2091,6 +2195,51 @@ informados sobre atividades relevantes.
 # .claude/specs/005-notifications/design.md
 
 # Design: Notificações
+```
+
+### Fluxo de Notificações
+
+```mermaid
+flowchart TB
+    subgraph SOURCES["📤 Fontes"]
+        T[Tarefas]
+        A[Automações]
+        W[Workspaces]
+    end
+    
+    subgraph SERVICE["🔔 NotificationService"]
+        CREATE[Criar<br/>Notificação]
+        CHECK[Verificar<br/>Preferências]
+        SAVE[(Salvar<br/>no DB)]
+    end
+    
+    subgraph DELIVERY["📬 Entrega"]
+        WS[Socket.io<br/>Real-time]
+        EMAIL[Email<br/>Resend]
+    end
+    
+    subgraph CLIENT["👤 Cliente"]
+        BADGE[Badge<br/>Contador]
+        LIST[Lista de<br/>Notificações]
+    end
+    
+    T --> CREATE
+    A --> CREATE
+    W --> CREATE
+    
+    CREATE --> CHECK
+    CHECK --> SAVE
+    SAVE --> WS
+    SAVE -.->|se habilitado| EMAIL
+    
+    WS --> BADGE
+    WS --> LIST
+    
+    style SOURCES fill:#3b82f6,color:#fff
+    style SERVICE fill:#8b5cf6,color:#fff
+    style DELIVERY fill:#f59e0b,color:#fff
+    style CLIENT fill:#10b981,color:#fff
+```
 
 ## Modelo de Dados
 
@@ -2172,7 +2321,6 @@ interface NotificationEvent {
 }
 
 // Room = user:${userId}
-```
 ```
 
 ---
@@ -2270,6 +2418,26 @@ NUNCA modifique specs sem permissão.
 ---
 
 ## Capítulo 12: Subagentes Especializados
+
+```mermaid
+flowchart LR
+    subgraph AGENTS["🤖 Subagentes"]
+        ARC["🏗️ Architect<br/>Decisões técnicas"]
+        IMP["💻 Implementer<br/>Código limpo"]
+        REV["🔍 Reviewer<br/>Qualidade"]
+    end
+    
+    REQ[Requirements] --> ARC
+    ARC --> DES[Design]
+    DES --> IMP
+    IMP --> COD[Code]
+    COD --> REV
+    REV -->|feedback| IMP
+    
+    style ARC fill:#3b82f6,color:#fff
+    style IMP fill:#10b981,color:#fff
+    style REV fill:#f59e0b,color:#fff
+```
 
 ```markdown
 # .claude/agents/architect.md
@@ -2408,7 +2576,7 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 [Endpoints YAML]
 
 ## 3. Fluxos
-[Diagramas]
+[Diagramas Mermaid]
 
 ## 4. Real-time Events
 [Se aplicável]
@@ -2440,7 +2608,7 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 - `path/to/file.ts`
 
 ## Dependências
-[Diagrama]
+[Diagrama Mermaid]
 ```
 
 ---
@@ -2476,6 +2644,53 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 
 ---
 
+## Apêndice D: Tipos de Diagramas Mermaid
+
+Este ebook utiliza diagramas Mermaid para visualização. Aqui estão os tipos usados:
+
+### Flowchart (Fluxogramas)
+
+```mermaid
+flowchart LR
+    A[Início] --> B{Decisão}
+    B -->|Sim| C[Ação 1]
+    B -->|Não| D[Ação 2]
+```
+
+### Sequence Diagram (Sequência)
+
+```mermaid
+sequenceDiagram
+    participant A as Cliente
+    participant B as Servidor
+    A->>B: Request
+    B->>A: Response
+```
+
+### State Diagram (Estados)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Estado1
+    Estado1 --> Estado2
+    Estado2 --> [*]
+```
+
+### Entity Relationship (ER)
+
+```mermaid
+erDiagram
+    USER ||--o{ TASK : creates
+    TASK {
+        string id
+        string title
+    }
+```
+
+---
+
 *Este ebook foi criado para desenvolvedores experientes adotarem Spec-Driven Development com Claude Code.*
 
 *O TaskFlow Pro é um projeto exemplo para ilustrar conceitos. As specs são funcionais e adaptáveis para projetos reais.*
+
+*Diagramas renderizados com Mermaid - compatível com GitHub, VS Code e principais editores Markdown.*

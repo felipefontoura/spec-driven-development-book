@@ -69,7 +69,7 @@ Abra o arquivo [`EBOOK.md`](./EBOOK.md) diretamente no GitHub.
 ### Download
 
 ```bash
-git clone https://github.com/felipefontoura/spec-driven-ebook.git
+git clone https://github.com/SEU_USER/spec-driven-ebook.git
 ```
 
 ### Aplicação Prática
