@@ -1,43 +1,24 @@
-# [Project Name]
+# SDD Kit — instructions for Claude
 
-## About
-[Project description — 2-3 lines about what it is, who it's for, and what problem it solves]
+This folder is the reader-facing SDD kit that ships with the book (Appendix B). It is the Claude Code port of `pi-sdd-kit`.
 
-## Stack
-[List the project's tech stack here]
+## Layout
 
-<!-- If there is a steering file with stack details, reference it:
-Details in @.claude/steering/tech-stack.md
--->
-
-## Development Workflow
-
-This project uses **Spec-Driven Development (SDD)**.
-See @.claude/steering/sdd-workflow.md
-
-### Available Commands
-
-| Command | Phase | Description |
-|---------|-------|-------------|
-| `/sdd:init` | Setup | Initialize SDD structure |
-| `/sdd:plan [intent]` | Planning | Map features and roadmap |
-| `/sdd:prd [feature]` | PRD | Create feature requirements |
-| `/sdd:spec [feature]` | Spec | Create technical design |
-| `/sdd:code [feature]` | Code | Plan tasks and implement |
-| `/sdd:review [feature]` | Review | Review implementation |
-| `/sdd:status` | Dashboard | Status of all features |
-
-### Pipeline
-
-```
-/sdd:plan → /sdd:prd → /sdd:spec → /sdd:code → /sdd:review
+```text
+sdd-kit/
+├── .claude/
+│   ├── skills/            # 10 SKILL.md skills (/sdd-init … /sdd-status)
+│   │   └── _shared/references/   # sdd-practical.md, templates.md (loaded by skills)
+│   └── agents/            # architect, implementer, reviewer sub-agents
+├── templates/            # user-facing copy-paste templates
+├── README.md
+└── CLAUDE.md             # this file
 ```
 
-Mandatory human approval between each phase.
+## Editing rules
 
-## Critical Rules
-
-- NEVER advance a phase without explicit approval
-- ALWAYS validate inputs on the server
-- ALWAYS use transactions for multi-table operations
-- NEVER expose data across isolated contexts
+- Skills use the **Agent Skills** `SKILL.md` format (`name` + `description` frontmatter). Keep the description precise about when to use AND when not to — Claude uses it to auto-invoke.
+- Invocation in Claude Code is `/sdd-<name>` (not Pi's `/skill:sdd-<name>`). Do not reintroduce the `/skill:` prefix.
+- Skills load their shared rules from `_shared/references/`; keep those two files as the single source of the workflow rules.
+- The kit and the book must agree: the pipeline is `IDEA → PLAN → REQUIREMENTS → DESIGN → TASKS → EXEC → REVIEW`, `.status` is the only gate, and the numbering comes from the filesystem. If you change one, change the other.
+- This kit is downstream of the book's method — when in doubt, the book's Part I is canonical.
