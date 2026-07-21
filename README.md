@@ -297,8 +297,6 @@ The build engine in `kit/` is a separate repository under its own
 [base25.so](https://base25.so) ·
 [@felipefontoura](https://github.com/felipefontoura)
 
-Channel: [YouTube — DEV Vai lá](https://youtube.com/@devvaila)
-
 ## Acknowledgments
 
 - [base25-book-kit](https://github.com/felipefontoura/base25-book-kit) — the
