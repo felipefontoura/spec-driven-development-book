@@ -86,7 +86,7 @@ git clone https://github.com/SEU_USER/spec-driven-ebook.git
 
 ## Building the book (PDF + EPUB)
 
-Print-ready PDF and reflowable EPUB are generated from the Markdown source by the **base25-book-kit** engine — a git submodule mounted at `kit/`. The PDF is sized 6×9" for Kindle Print; the EPUB is EPUB 3 with a 1600×2560 cover, ready for KDP digital upload. Every book-specific string (title, cover, copyright) lives in `book.config.json`.
+Print-ready PDF and reflowable EPUB are generated from the Markdown source by the **[base25-book-kit](https://github.com/felipefontoura/base25-book-kit)** engine — an open-source (MIT) git submodule mounted at `kit/`. Because the engine is public, the submodule clones anonymously over HTTPS (no deploy key, no auth). The PDF is sized 6×9" for Kindle Print; the EPUB is EPUB 3 with a 1600×2560 cover, ready for KDP digital upload. Every book-specific string (title, cover, copyright) lives in `book.config.json`.
 
 ### Sources
 

@@ -213,10 +213,12 @@ mmdc -i BOOK.en.md -o output.md
 
 ## Typst Build Pipeline (kit submodule)
 
-The build **engine is a git submodule** — `felipefontoura/base25-book-kit`,
-mounted at `kit/`. This repo holds only the book (content + one config); the
-pipeline, Typst template, cover, fonts and scripts are inherited from the kit.
-See `kit/README.md` for the full engine/config reference.
+The build **engine is a git submodule** — `felipefontoura/base25-book-kit`
+(open source, MIT), mounted at `kit/`. Since the kit is public, the submodule
+uses an HTTPS URL and clones anonymously — no deploy key, no auth, both locally
+and in CI. This repo holds only the book (content + one config); the pipeline,
+Typst template, cover, fonts and scripts are inherited from the kit. See
+`kit/README.md` for the full engine/config reference.
 
 Markdown is the source of truth. The pipeline produces **two artifacts**:
 a print-ready 6×9" PDF (via Typst) and a reflowable EPUB 3 (via marked +
@@ -231,7 +233,7 @@ spec-driven-development-book/      ← the BOOK repo (content + config only)
 ├── BOOK.en.md                     ← English source
 ├── book.config.json               ← ALL book-specific strings + kit.dir (the one per-book config)
 ├── mise.toml                      ← Node + Typst versions (must sit at the book root)
-├── .github/workflows/build.yml    ← CI (fetches the kit submodule via the KIT_SUBMODULE_SSH_KEY deploy key)
+├── .github/workflows/build.yml    ← CI (checks out the public kit submodule with submodules: recursive)
 │
 ├── kit/                           ← GIT SUBMODULE = the engine (base25-book-kit)
 │   ├── scripts/                   build.sh, md-to-typst, md-to-epub, render-mermaid, lib/…

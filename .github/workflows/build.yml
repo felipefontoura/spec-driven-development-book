@@ -24,18 +24,10 @@ jobs:
             source: BOOK.en.md
 
     steps:
-      - name: Checkout
+      - name: Checkout (with the public base25-book-kit engine submodule)
         uses: actions/checkout@v4
-
-      - name: Fetch engine submodule (private base25-book-kit, via read-only deploy key)
-        run: |
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "${{ secrets.KIT_SUBMODULE_SSH_KEY }}" > ~/.ssh/kit_deploy
-          chmod 600 ~/.ssh/kit_deploy
-          ssh-keyscan -t ed25519,rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
-          printf 'Host github.com\n  IdentityFile ~/.ssh/kit_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config
-          git submodule sync --recursive
-          git submodule update --init --recursive
+        with:
+          submodules: recursive
 
       - name: Skip if source missing
         id: probe
