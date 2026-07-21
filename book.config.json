@@ -7,17 +7,17 @@
     "pt": {
       "langTag": "pt-BR",
       "title": "Spec-Driven Development",
-      "subtitle": "O Guia Definitivo para Construir Produtos com IA",
-      "eyebrow": "Um método de desenvolvimento AI-native",
+      "subtitle": "O Guia Definitivo para Construir Software com Agentes de IA",
+      "eyebrow": "Do método ao código em produção",
       "tocName": "Sumário",
-      "preambleTitle": "Introdução",
+      "preambleTitle": "Por que este livro existe",
       "partsLabel": "Parte",
       "appendixLabel": "Apêndice",
-      "description": "Uma metodologia completa para construir produtos com agentes de IA — do requisito à implementação, com especificações que dirigem o código. Construindo o TaskFlow Pro do zero.",
+      "description": "O guia definitivo de Spec-Driven Development: o método que levou 13 apps a produção em 70 dias, solo, com agentes de IA. Requirements, design e tasks em formato EARS, gates de aprovação, o antídoto ao vibe coding — com Claude Code, e comparado a GitHub Spec Kit e AWS Kiro. Construindo o TaskFlow Pro do zero.",
       "cover": {
         "title": "Spec-Driven Development",
-        "subtitle": "O Guia Definitivo para Construir Produtos com IA",
-        "label": "UM MÉTODO DE DESENVOLVIMENTO AI-NATIVE"
+        "subtitle": "O Guia Definitivo para Construir Software com Agentes de IA",
+        "label": "DO MÉTODO AO CÓDIGO EM PRODUÇÃO"
       },
       "copyright": [
         "Copyright © 2026 Felipe Fontoura. Todos os direitos reservados.",
@@ -31,17 +31,17 @@
     "en": {
       "langTag": "en-US",
       "title": "Spec-Driven Development",
-      "subtitle": "The Definitive Guide to Building Products with AI",
-      "eyebrow": "An AI-native development method",
+      "subtitle": "The Definitive Guide to Building Software with AI Agents",
+      "eyebrow": "From the method to production code",
       "tocName": "Contents",
-      "preambleTitle": "Introduction",
+      "preambleTitle": "Why this book exists",
       "partsLabel": "Part",
       "appendixLabel": "Appendix",
-      "description": "A complete methodology for building products with AI agents — from requirements to implementation, with specifications driving the code. Building TaskFlow Pro from scratch.",
+      "description": "The definitive guide to Spec-Driven Development: the method that shipped 13 apps to production in 70 days, solo, with AI agents. Requirements, design, and tasks in EARS format, approval gates, the antidote to vibe coding — with Claude Code, and compared to GitHub Spec Kit and AWS Kiro. Building TaskFlow Pro from scratch.",
       "cover": {
         "title": "Spec-Driven Development",
-        "subtitle": "The Definitive Guide to Building Products with AI",
-        "label": "AN AI-NATIVE DEVELOPMENT METHOD"
+        "subtitle": "The Definitive Guide to Building Software with AI Agents",
+        "label": "FROM THE METHOD TO PRODUCTION CODE"
       },
       "copyright": [
         "Copyright © 2026 Felipe Fontoura. All rights reserved.",

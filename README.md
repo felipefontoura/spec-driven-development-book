@@ -15,40 +15,46 @@ A complete and practical ebook on how to use specifications to maximize producti
 
 ## 📖 Contents
 
-### Part I: Fundamentals
+### Part I: Foundations
 
 1. The Problem Nobody Talks About
-2. What is Spec-Driven Development
-3. Anatomy of a Specification
+2. What Is Spec-Driven Development
+3. The Anatomy of a Specification
 4. Writing Effective Specs
 
-### Part II: Complete Specs (TaskFlow Pro Project)
+### Part II: In Practice — TaskFlow Pro
 
-1. The TaskFlow Pro Project
-2. Authentication Spec
-3. Workspaces Spec
-4. Tasks Spec
-5. Automations Spec
-6. Notifications Spec
+5. The TaskFlow Pro Project
+6. Authentication Spec
+7. Workspaces Spec
+8. Tasks Spec
+9. Automations Spec
+10. Notifications Spec
 
-### Part III: Advanced Techniques
+### Part III: Executing with Agents
 
-1. Custom Slash Commands
-2. Specialized Sub-agents
-3. Conclusion
+11. SDD with Claude Code
+12. Commands, Skills, and Sub-agents
+
+### Part IV: Scale and Ecosystem
+
+13. The Real Case — 13 Apps in 70 Days
+14. SDD for Teams
+15. The SDD Ecosystem
+16. Conclusion
 
 ### Appendices
 
-- Ready-to-Use Templates (requirements.md, design.md, tasks.md)
-- Glossary
-- Spec Index
+- A — Ready-to-Use Templates (requirements.md, design.md, tasks.md)
+- B — This Book's SDD Kit (Claude Code skills + sub-agents)
+- C — Glossary
 
 ## 🛠️ Example Project Stack
 
 The ebook uses **TaskFlow Pro** as an example project — a collaborative task management system:
 
 ```
-Turborepo + Next.js 14 + Fastify + Prisma + shadcn/ui
+Turborepo + Next.js 16 + Fastify 5 + Prisma 7 + shadcn/ui
 Socket.io (real-time) + BullMQ (queues) + Redis
 ```
 
