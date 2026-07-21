@@ -1,0 +1,109 @@
+name: Build book (PDF + EPUB)
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write  # needed for release upload on tags
+
+jobs:
+  build:
+    name: Build ${{ matrix.lang }} (${{ matrix.source }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lang: pt-br
+            source: BOOK.pt-BR.md
+          - lang: en
+            source: BOOK.en.md
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch engine submodule (private base25-book-kit, via read-only deploy key)
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.KIT_SUBMODULE_SSH_KEY }}" > ~/.ssh/kit_deploy
+          chmod 600 ~/.ssh/kit_deploy
+          ssh-keyscan -t ed25519,rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
+          printf 'Host github.com\n  IdentityFile ~/.ssh/kit_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Skip if source missing
+        id: probe
+        run: |
+          if [[ -f "${{ matrix.source }}" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Source ${{ matrix.source }} not present — skipping ${{ matrix.lang }} build."
+          fi
+
+      - name: Setup Node
+        if: steps.probe.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: kit/package-lock.json
+
+      - name: Setup Typst
+        if: steps.probe.outputs.present == 'true'
+        uses: typst-community/setup-typst@v4
+
+      - name: Install Chromium (for mmdc)
+        if: steps.probe.outputs.present == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            chromium-browser fonts-liberation libnss3 libatk-bridge2.0-0 \
+            libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
+            libxshmfence1 libasound2t64 || \
+          sudo apt-get install -y --no-install-recommends \
+            chromium fonts-liberation libnss3 libatk-bridge2.0-0 \
+            libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
+            libxshmfence1 libasound2t64
+
+      - name: Install npm dependencies
+        if: steps.probe.outputs.present == 'true'
+        run: npm --prefix kit ci --no-audit --no-fund
+
+      - name: Build PDF + EPUB
+        if: steps.probe.outputs.present == 'true'
+        env:
+          SOURCE_MD: ${{ matrix.source }}
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+        run: |
+          if [[ ! -x "$PUPPETEER_EXECUTABLE_PATH" ]]; then
+            export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+          fi
+          bash kit/scripts/build.sh --all
+
+      - name: Upload artifacts
+        if: steps.probe.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-${{ matrix.lang }}
+          path: |
+            dist/book-${{ matrix.lang }}.pdf
+            dist/book-${{ matrix.lang }}.epub
+            dist/cover-${{ matrix.lang }}.png
+          if-no-files-found: error
+
+      - name: Attach to Release (tag pushes only)
+        if: steps.probe.outputs.present == 'true' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/book-${{ matrix.lang }}.pdf
+            dist/book-${{ matrix.lang }}.epub
+            dist/cover-${{ matrix.lang }}.png

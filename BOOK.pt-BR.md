@@ -8,13 +8,13 @@
 
 **Por que este livro existe**
 
-Você é um desenvolvedor experiente. Já construiu sistemas, debugou código às 3h da manhã, e sabe que a parte mais difícil de qualquer projeto não é escrever código — é saber *o que* escrever.
+Você é um desenvolvedor experiente. Já construiu sistemas, depurou código às 3 da manhã, e sabe que a parte mais difícil de qualquer projeto não é escrever código — é saber *o que* escrever.
 
-Com a chegada de agentes de IA como Claude Code, Cursor e Copilot, essa verdade se tornou ainda mais evidente. Essas ferramentas podem gerar milhares de linhas de código em minutos, mas sem direção clara, produzem o equivalente digital de um castelo de cartas: impressionante à primeira vista, mas pronto para desabar ao primeiro sopro de requisito mal entendido.
+Com a chegada de agentes de IA como Claude Code, Cursor e Copilot, essa verdade ficou ainda mais evidente. Essas ferramentas conseguem gerar milhares de linhas de código em minutos, mas sem direção clara produzem o equivalente digital de um castelo de cartas: impressionante à primeira vista, mas pronto para desabar ao primeiro sopro de um requisito mal compreendido.
 
-Este livro vai te ensinar **Spec-Driven Development (SDD)** — uma metodologia que transforma a maneira como você trabalha com agentes de IA. Vamos construir juntos uma aplicação real: o TaskFlow Pro, um sistema de gerenciamento de tarefas colaborativo com workspaces, automações e notificações em tempo real.
+Este livro vai te ensinar **Spec-Driven Development (SDD)** — uma metodologia que transforma a forma como você trabalha com agentes de IA. Juntos, vamos construir uma aplicação real: o TaskFlow Pro, um sistema colaborativo de gerenciamento de tarefas com workspaces, automações e notificações em tempo real.
 
-Ao final, você terá não apenas o conhecimento teórico, mas especificações completas e prontas para usar.
+Ao final, você terá não apenas conhecimento teórico, mas também especificações completas prontas para uso.
 
 ---
 
@@ -22,19 +22,19 @@ Ao final, você terá não apenas o conhecimento teórico, mas especificações 
 
 ---
 
-## Capítulo 1: O Problema que Ninguém Fala
+## Capítulo 1: O Problema de Que Ninguém Fala
 
-### 1.1 A Ilusão da Velocidade
+### 1.1 A Ilusão de Velocidade
 
-Imagine que você contratou um pedreiro extraordinariamente rápido. Ele ergue paredes em minutos, instala encanamentos em segundos, e termina o telhado antes do almoço. Impressionante, certo?
+Imagine que você contratou um pedreiro extraordinariamente rápido. Ele levanta paredes em minutos, instala encanamento em segundos e termina o telhado antes do almoço. Impressionante, certo?
 
-Agora imagine que você esqueceu de dar a planta da casa para ele.
+Agora imagine que você esqueceu de dar a ele a planta da casa.
 
-O resultado? Uma construção que pode até ficar de pé, mas com o banheiro no lugar da cozinha, portas que abrem para paredes, e uma escada que leva a lugar nenhum.
+O resultado? Uma construção que pode até ficar em pé, mas com o banheiro onde deveria ser a cozinha, portas que se abrem para paredes, e uma escada que não leva a lugar nenhum.
 
-**Este é exatamente o problema com desenvolvimento assistido por IA sem especificações.**
+**Esse é exatamente o problema do desenvolvimento assistido por IA sem especificações.**
 
-Claude Code, Cursor, e similares são esses pedreiros extraordinários. Eles podem gerar código a uma velocidade que seria ficção científica há cinco anos. Mas velocidade sem direção é apenas uma forma mais rápida de chegar ao lugar errado.
+Claude Code, Cursor e ferramentas similares são esses pedreiros extraordinários. Eles conseguem gerar código em uma velocidade que seria ficção científica há cinco anos. Mas velocidade sem direção é apenas uma forma mais rápida de chegar ao lugar errado.
 
 ### 1.2 O Custo Real do Retrabalho
 
@@ -42,8 +42,8 @@ Vamos fazer uma conta simples. Em um projeto típico sem especificações:
 
 ```
 Iteração 1: "Crie um sistema de tarefas"
-→ Claude gera código
-→ Você percebe que faltou workspaces
+→ Claude gera o código
+→ Você percebe que faltam workspaces
 → 15 minutos perdidos
 
 Iteração 2: "Adicione workspaces"
@@ -63,9 +63,9 @@ Em contraste, com especificações:
 
 ```
 Especificação completa: 2 horas de planejamento
-→ Claude gera código seguindo spec
-→ Ajustes menores
-→ Implementação correta de primeira
+→ Claude gera o código seguindo a spec
+→ Pequenos ajustes
+→ Implementação correta na primeira tentativa
 
 Tempo total: 3 horas
 vs.
@@ -76,29 +76,29 @@ A matemática é clara: **investir tempo em especificações economiza tempo tot
 
 ### 1.3 Por Que Desenvolvedores Experientes Resistem
 
-Se você tem 10, 15, 20 anos de experiência, provavelmente está pensando: "Eu já sei o que preciso construir. Especificações formais são burocracia."
+Se você tem 10, 15, 20 anos de experiência, provavelmente está pensando: "Já sei o que preciso construir. Especificações formais são burocracia."
 
-Eu entendo. Por anos, as melhores práticas de desenvolvimento enfatizaram agilidade, iteração rápida, e "código funcionando sobre documentação abrangente".
+Eu entendo. Por anos, as boas práticas de desenvolvimento enfatizaram agilidade, iteração rápida e "código funcionando acima de documentação abrangente".
 
-Mas aqui está a diferença crucial: **você não está mais codando sozinho**.
+Mas há uma diferença crucial aqui: **você não está mais programando sozinho**.
 
-Quando você escreve código, seu cérebro mantém um modelo mental do sistema inteiro. Você sabe que aquela função obscura em `utils.ts` é crítica porque lembra da vez que ela salvou o projeto às 2h da manhã.
+Quando você escreve código, seu cérebro mantém um modelo mental do sistema inteiro. Você sabe que aquela função obscura em `utils.ts` é crítica porque lembra da vez em que ela salvou o projeto às 2 da manhã.
 
-Claude não tem essa memória. Cada sessão começa do zero. Cada contexto é limitado. O agente é extraordinariamente capaz, mas opera em um presente eterno, sem acesso às decisões que você tomou ontem ou às lições que aprendeu no mês passado.
+O Claude não tem essa memória. Cada sessão começa do zero. Cada contexto é limitado. O agente é extraordinariamente capaz, mas opera em um eterno presente, sem acesso às decisões que você tomou ontem ou às lições que aprendeu no mês passado.
 
-**Especificações são a memória externa que agentes de IA precisam.**
+**Especificações são a memória externa de que os agentes de IA precisam.**
 
 ### 1.4 A Analogia do GPS
 
-Pense em especificações como um GPS para sua jornada de desenvolvimento.
+Pense nas especificações como um GPS para a sua jornada de desenvolvimento.
 
 Sem GPS (sem specs):
 
-- Você sabe vagamente onde quer chegar
-- Toma decisões no momento
+- Você sabe vagamente para onde quer ir
+- Toma decisões na hora
 - Às vezes encontra atalhos
 - Frequentemente se perde
-- Gasta combustível (tempo) desnecessário
+- Desperdiça combustível (tempo) sem necessidade
 
 Com GPS (com specs):
 
@@ -107,64 +107,64 @@ Com GPS (com specs):
 - Recálculo automático quando algo muda
 - Chegada previsível
 
-O GPS não tira sua autonomia como motorista. Você ainda decide quando parar, qual música ouvir, e pode ignorar sugestões se souber de algo melhor. Mas ele garante que você não vai acabar em outro estado quando queria ir ao supermercado.
+O GPS não tira a sua autonomia como motorista. Você ainda decide quando parar, que música ouvir, e pode ignorar sugestões se sabe mais. Mas ele garante que você não acabe em outro estado quando queria ir ao mercado.
 
 ---
 
-## Capítulo 2: O Que é Spec-Driven Development
+## Capítulo 2: O Que É Spec-Driven Development
 
 ### 2.1 Definição Formal
 
-**Spec-Driven Development (SDD)** é uma metodologia de desenvolvimento de software onde especificações detalhadas são criadas e aprovadas *antes* de qualquer implementação, servindo como contrato entre humanos e agentes de IA.
+**Spec-Driven Development (SDD)** é uma metodologia de desenvolvimento de software em que especificações detalhadas são criadas e aprovadas *antes* de qualquer implementação, servindo como contrato entre humanos e agentes de IA.
 
-Diferente de metodologias tradicionais onde documentação é um artefato secundário, em SDD a especificação é o artefato primário. O código é uma consequência da spec, não o contrário.
+Diferentemente de metodologias tradicionais, em que a documentação é um artefato secundário, no SDD a especificação é o artefato primário. O código é uma consequência da spec, não o contrário.
 
 ### 2.2 Os Quatro Pilares
 
-SDD se sustenta em quatro pilares fundamentais:
+O SDD é construído sobre quatro pilares fundamentais:
 
 ```mermaid
 flowchart TB
     subgraph SDD["SPEC-DRIVEN DEVELOPMENT"]
-        REQ["📋 REQUIREMENTS<br/>(O QUÊ)"]
+        REQ["📋 REQUIREMENTS<br/>(O QUE)"]
         DES["🏗️ DESIGN<br/>(COMO)"]
         TSK["📝 TASKS<br/>(QUANTO)"]
         IMP["⚙️ IMPLEMENTATION<br/>(EXECUÇÃO)"]
-        
+
         REQ --> DES
         DES --> TSK
         TSK --> IMP
         IMP -.->|feedback| REQ
     end
-    
+
     style REQ fill:#3b82f6,color:#fff
     style DES fill:#8b5cf6,color:#fff
     style TSK fill:#f59e0b,color:#fff
     style IMP fill:#10b981,color:#fff
 ```
 
-**Pilar 1: Requirements (Requisitos)**
+**Pilar 1: Requirements**
 
-- Define O QUÊ o sistema deve fazer
+- Define O QUE o sistema deve fazer
 - Escrito em linguagem de negócio
 - Focado em comportamentos observáveis
 - Independente de tecnologia
 
-**Pilar 2: Design (Projeto)**
+**Pilar 2: Design**
 
-- Define COMO o sistema vai funcionar
+- Define COMO o sistema funcionará
 - Decisões arquiteturais
-- Escolhas tecnológicas justificadas
+- Escolhas de tecnologia justificadas
 - Modelos de dados e APIs
 
-**Pilar 3: Tasks (Tarefas)**
+**Pilar 3: Tasks**
 
 - Define QUANTO trabalho existe
 - Decomposição em unidades implementáveis
 - Dependências e prioridades
-- Rastreabilidade para requisitos
+- Rastreabilidade até os requisitos
 
-**Pilar 4: Implementation (Implementação)**
+**Pilar 4: Implementation**
 
 - EXECUÇÃO seguindo as specs
 - Verificação contra critérios de aceitação
@@ -173,18 +173,18 @@ flowchart TB
 
 ### 2.3 O Fluxo de Gates
 
-Um conceito crucial em SDD é o sistema de **gates** (portões) entre fases:
+Um conceito crucial no SDD é o sistema de **gates** (portões) entre as fases:
 
 ```mermaid
 flowchart LR
     REQ[Requirements] -->|"🚪 GATE 1"| DES[Design]
     DES -->|"🚪 GATE 2"| TSK[Tasks]
-    TSK -->|"🚪 GATE 3"| COD[Code]
-    
+    TSK -->|"🚪 GATE 3"| COD[Código]
+
     REQ ---|"✅ Aprovação<br/>Humana"| G1[" "]
     DES ---|"✅ Aprovação<br/>Humana"| G2[" "]
     TSK ---|"✅ Aprovação<br/>Humana"| G3[" "]
-    
+
     style REQ fill:#3b82f6,color:#fff
     style DES fill:#8b5cf6,color:#fff
     style TSK fill:#f59e0b,color:#fff
@@ -196,31 +196,31 @@ flowchart LR
 
 Cada gate representa um ponto de decisão humana. O agente de IA **não pode** avançar para a próxima fase sem aprovação explícita. Isso garante que:
 
-1. Erros são detectados antes de se propagarem
-2. Decisões críticas são revisadas por humanos
-3. O custo de correção é minimizado (quanto mais cedo, mais barato)
+1. Erros sejam detectados antes que se propaguem
+2. Decisões críticas sejam revisadas por humanos
+3. O custo de correção seja minimizado (quanto mais cedo, mais barato)
 
 ### 2.4 Comparação com Outras Metodologias
 
 | Aspecto | Waterfall | Agile/Scrum | SDD |
 |---------|-----------|-------------|-----|
-| Documentação | Extensiva upfront | Mínima | Estruturada por fase |
+| Documentação | Extensa antecipada | Mínima | Estruturada por fase |
 | Flexibilidade | Baixa | Alta | Média-alta |
-| Feedback loops | Longos | Curtos | Por fase |
-| Adequação para IA | Ruim | Razoável | Excelente |
+| Loops de feedback | Longos | Curtos | Por fase |
+| Adequação à IA | Ruim | Razoável | Excelente |
 | Overhead | Alto | Baixo | Médio |
 | Rastreabilidade | Alta | Baixa | Alta |
 
-SDD não é Waterfall disfarçado. A diferença crucial é que specs em SDD são **vivas** — elas evoluem, mas de forma controlada. Você pode voltar e modificar requisitos, mas essa modificação se propaga conscientemente através de design e tasks.
+SDD não é Waterfall disfarçado. A diferença crucial é que as specs no SDD são **vivas** — elas evoluem, mas de maneira controlada. Você pode voltar e modificar requisitos, mas essa modificação se propaga conscientemente pelo design e pelas tasks.
 
 ### 2.5 Quando Usar (e Quando Não Usar)
 
 **Use SDD quando:**
 
-- O projeto dura mais que alguns dias
+- O projeto dura mais que poucos dias
 - Múltiplas features complexas estão envolvidas
 - Você trabalha com agentes de IA
-- A arquitetura precisa ser pensada com cuidado
+- A arquitetura precisa ser cuidadosamente pensada
 - Rastreabilidade é importante
 - Múltiplas sessões de desenvolvimento serão necessárias
 
@@ -229,9 +229,9 @@ SDD não é Waterfall disfarçado. A diferença crucial é que specs em SDD são
 - É um script simples de uma hora
 - Você está prototipando para descobrir requisitos
 - O escopo é trivial e bem conhecido
-- Você vai implementar tudo em uma única sessão
+- Você implementará tudo em uma única sessão
 
-Para nosso projeto TaskFlow Pro, SDD é a escolha óbvia: temos autenticação, workspaces colaborativos, sistema de permissões, automações, notificações em tempo real — complexidade que exige planejamento.
+Para o nosso projeto TaskFlow Pro, SDD é a escolha óbvia: temos autenticação, workspaces colaborativos, sistema de permissões, automações, notificações em tempo real — complexidade que exige planejamento.
 
 ---
 
@@ -243,36 +243,36 @@ Antes de escrever qualquer spec, precisamos de uma estrutura organizacional clar
 
 ```mermaid
 graph TD
-    ROOT[📁 projeto/] --> CLAUDE_DIR[📁 .claude/]
+    ROOT[📁 project/] --> CLAUDE_DIR[📁 .claude/]
     ROOT --> CLAUDE_MD[📄 CLAUDE.md]
     ROOT --> APPS[📁 apps/]
     ROOT --> PACKAGES[📁 packages/]
-    
+
     CLAUDE_DIR --> COMMANDS[📁 commands/]
     CLAUDE_DIR --> STEERING[📁 steering/]
     CLAUDE_DIR --> SPECS[📁 specs/]
     CLAUDE_DIR --> AGENTS[📁 agents/]
-    
+
     COMMANDS --> C1[📄 spec-new.md]
     COMMANDS --> C2[📄 spec-requirements.md]
     COMMANDS --> C3[📄 spec-design.md]
-    
+
     STEERING --> S1[📄 product.md]
     STEERING --> S2[📄 tech-stack.md]
     STEERING --> S3[📄 conventions.md]
-    
+
     SPECS --> SP1[📁 001-auth/]
     SPECS --> SP2[📁 002-workspaces/]
     SPECS --> SP3[📁 003-tasks/]
-    
+
     SP1 --> SP1A[📄 requirements.md]
     SP1 --> SP1B[📄 design.md]
     SP1 --> SP1C[📄 tasks.md]
-    
+
     AGENTS --> A1[📄 architect.md]
     AGENTS --> A2[📄 implementer.md]
     AGENTS --> A3[📄 reviewer.md]
-    
+
     style ROOT fill:#1e293b,color:#fff
     style CLAUDE_DIR fill:#3b82f6,color:#fff
     style SPECS fill:#8b5cf6,color:#fff
@@ -283,14 +283,14 @@ graph TD
 O `CLAUDE.md` é o ponto de entrada. Ele deve ser conciso (< 300 linhas) e usar imports para detalhes:
 
 ```markdown
-# TaskFlow Pro - Instruções para Claude
+# TaskFlow Pro - Instruções para o Claude
 
 ## Sobre o Projeto
-Sistema de gerenciamento de tarefas colaborativo com workspaces,
+Sistema colaborativo de gerenciamento de tarefas com workspaces,
 automações e notificações em tempo real.
 Veja @.claude/steering/product.md para detalhes completos.
 
-## Stack Tecnológica
+## Tech Stack
 - Monorepo: Turborepo
 - Frontend: Next.js 14 (App Router) + shadcn/ui
 - Backend: Fastify + Prisma
@@ -302,17 +302,17 @@ Detalhes em @.claude/steering/tech-stack.md
 ## Convenções
 Veja @.claude/steering/conventions.md
 
-## Workflow de Desenvolvimento
+## Fluxo de Desenvolvimento
 Este projeto usa Spec-Driven Development.
 
 ### Antes de implementar qualquer feature:
-1. Verifique se existe spec em `.claude/specs/`
-2. Leia requirements.md, design.md, e tasks.md
+1. Verifique se existe uma spec em `.claude/specs/`
+2. Leia requirements.md, design.md e tasks.md
 3. Implemente seguindo a spec
-4. Marque tasks como completas
+4. Marque tasks como concluídas
 
-### Para criar nova feature:
-1. Use `/spec-new [nome-feature]`
+### Para criar uma nova feature:
+1. Use `/spec-new [feature-name]`
 2. Siga o workflow: requirements → design → tasks → implementation
 3. Aguarde aprovação humana entre cada fase
 
@@ -320,24 +320,24 @@ Este projeto usa Spec-Driven Development.
 - NUNCA exponha dados de um workspace para outro
 - SEMPRE verifique permissões antes de operações
 - SEMPRE use transações para operações que afetam múltiplas tabelas
-- NUNCA confie em dados do cliente - valide no servidor
+- NUNCA confie nos dados do cliente - valide no servidor
 
 ## Links Úteis
 - Documentação Prisma: @docs/prisma.md
-- Guia de APIs: @docs/api-guide.md
+- Guia de API: @docs/api-guide.md
 ```
 
 ### 3.3 Anatomia de requirements.md
 
-O arquivo de requisitos é escrito em linguagem de negócio, não técnica:
+O arquivo de requirements é escrito em linguagem de negócio, não técnica:
 
 ```markdown
 # Feature: Gerenciamento de Tarefas
 
 ## Visão Geral
 Permitir que usuários criem, organizem e gerenciem tarefas
-dentro de workspaces, com suporte a subtasks, tags, datas
-de vencimento e atribuições.
+dentro de workspaces, com suporte a subtasks, tags, datas de
+vencimento e atribuições.
 
 ## Contexto de Negócio
 Tarefas são o core do produto. Um sistema de tarefas bem
@@ -349,7 +349,7 @@ automações e integrações com calendário.
 ### US-001: Criar Tarefa
 **Como** membro de um workspace
 **Quero** criar uma nova tarefa
-**Para que** possa registrar trabalho a ser feito
+**Para que** eu possa registrar trabalho a ser feito
 
 **Critérios de Aceitação:**
 - [ ] Tarefa criada com título obrigatório
@@ -362,69 +362,69 @@ automações e integrações com calendário.
 ### US-002: Criar Subtask
 **Como** membro de um workspace
 **Quero** criar subtasks dentro de uma tarefa
-**Para que** possa quebrar trabalho complexo em partes menores
+**Para que** eu possa quebrar trabalho complexo em partes menores
 
 **Critérios de Aceitação:**
-- [ ] Subtask tem título obrigatório
-- [ ] Subtask herda workspace da tarefa pai
+- [ ] Subtask possui título obrigatório
+- [ ] Subtask herda o workspace da task pai
 - [ ] Subtask pode ser marcada como concluída independentemente
-- [ ] Progresso da tarefa pai reflete % de subtasks concluídas
-- [ ] Máximo de 50 subtasks por tarefa
+- [ ] Progresso da task pai reflete o % de subtasks concluídas
+- [ ] Máximo de 50 subtasks por task
 
-### US-003: Completar Tarefa
+### US-003: Concluir Tarefa
 **Como** membro de um workspace
 **Quero** marcar uma tarefa como concluída
-**Para que** possa acompanhar meu progresso
+**Para que** eu possa acompanhar meu progresso
 
 **Critérios de Aceitação:**
 - [ ] Um clique para marcar como concluída
-- [ ] Tarefa concluída move para seção "Concluídas"
+- [ ] Tarefa concluída vai para a seção "Concluídas"
 - [ ] Data/hora de conclusão registrada
-- [ ] Pode desfazer conclusão
+- [ ] É possível desfazer a conclusão
 - [ ] Notifica membros atribuídos (se configurado)
 
 ## Requisitos Funcionais
 
-### RF-001 (Must Have)
-O sistema DEVE validar que o usuário tem permissão no workspace
-antes de criar/editar/deletar tarefas.
+### FR-001 (Must Have)
+O SISTEMA DEVE validar que o usuário tem permissão no workspace
+antes de criar/editar/excluir tarefas.
 
-### RF-002 (Must Have)
-O sistema DEVE atualizar a lista de tarefas em tempo real
+### FR-002 (Must Have)
+O SISTEMA DEVE atualizar a lista de tarefas em tempo real
 para todos os membros do workspace quando houver mudanças.
 
-### RF-003 (Must Have)
-O sistema DEVE manter histórico de alterações em cada tarefa
-(quem alterou, quando, o quê mudou).
+### FR-003 (Must Have)
+O SISTEMA DEVE manter um histórico de alterações por tarefa
+(quem alterou, quando, o que mudou).
 
-### RF-004 (Should Have)
-O sistema DEVE permitir arrastar e soltar para reordenar tarefas.
+### FR-004 (Should Have)
+O SISTEMA DEVE permitir drag and drop para reordenar tarefas.
 
-### RF-005 (Could Have)
-O sistema PODE sugerir tags baseado no título da tarefa.
+### FR-005 (Could Have)
+O SISTEMA PODE sugerir tags com base no título da tarefa.
 
-## Requisitos Não-Funcionais
+## Requisitos Não Funcionais
 
-### RNF-001: Performance
+### NFR-001: Performance
 - Lista de tarefas: carregamento < 500ms
 - Criar tarefa: resposta < 300ms
-- Atualização real-time: latência < 200ms
+- Atualização em tempo real: latência < 200ms
 
-### RNF-002: Escalabilidade
+### NFR-002: Escalabilidade
 - Suportar até 10.000 tarefas por workspace
 - Suportar até 100 membros por workspace
 
-### RNF-003: Usabilidade
+### NFR-003: Usabilidade
 - Interface responsiva (mobile-first)
 - Atalhos de teclado para ações comuns
 - Feedback visual para todas as ações
 
 ## Glossário
-- **Workspace**: Espaço de trabalho compartilhado por uma equipe
-- **Task**: Unidade de trabalho a ser realizada
+- **Workspace**: Espaço de trabalho compartilhado por um time
+- **Task**: Unidade de trabalho a ser feita
 - **Subtask**: Subdivisão de uma task
-- **Tag**: Etiqueta para categorização de tarefas
-- **Assignee**: Membro atribuído a uma tarefa
+- **Tag**: Rótulo para categorização de tasks
+- **Assignee**: Membro atribuído a uma task
 
 ## Referências
 - Benchmark: Todoist, Linear, Asana
@@ -433,51 +433,51 @@ O sistema PODE sugerir tags baseado no título da tarefa.
 
 ### 3.4 Usando o Formato EARS
 
-EARS (Easy Approach to Requirements Syntax) é um formato que ajuda a escrever requisitos não-ambíguos:
+EARS (Easy Approach to Requirements Syntax) é um formato que ajuda a escrever requisitos sem ambiguidade:
 
 ```markdown
 ## Requisitos Funcionais (Formato EARS)
 
 ### Ubiquitous (Sempre verdadeiro)
-O sistema DEVE validar permissões de workspace em todas 
-as operações de tarefas.
+O SISTEMA DEVE validar permissões de workspace em todas
+as operações de tarefa.
 
 ### Event-Driven (Quando algo acontece)
-QUANDO uma tarefa é marcada como concluída, 
-o sistema DEVE registrar timestamp e usuário que concluiu.
+QUANDO uma tarefa for marcada como concluída,
+O SISTEMA DEVE registrar o timestamp e o usuário que concluiu.
 
-### Unwanted Behavior (Tratamento de erro)
+### Unwanted Behavior (Tratamento de erros)
 SE o usuário tentar criar mais de 50 subtasks,
-o sistema DEVE exibir erro "Limite de subtasks atingido".
+O SISTEMA DEVE exibir o erro "Limite de subtasks atingido".
 
 ### State-Driven (Baseado em estado)
 ENQUANTO uma tarefa estiver arquivada,
-o sistema NÃO DEVE permitir edições.
+O SISTEMA NÃO DEVE permitir edições.
 
 ### Optional (Condicional)
-ONDE o workspace tiver notificações habilitadas,
-o sistema DEVE notificar assignees quando tarefa for modificada.
+ONDE o workspace tem notificações habilitadas,
+O SISTEMA DEVE notificar os atribuídos quando uma tarefa for modificada.
 
 ### Complex (Combinação)
 QUANDO uma tarefa for concluída
-E a tarefa tiver automação configurada,
-o sistema DEVE executar a automação
+E a tarefa tiver uma automação configurada,
+O SISTEMA DEVE executar a automação
 ANTES de atualizar o status para concluída.
 ```
 
 ---
 
-## Capítulo 4: Escrevendo Specs Efetivas
+## Capítulo 4: Escrevendo Specs Eficazes
 
 ### 4.1 O Princípio da Criança Inteligente
 
-Imagine que você está explicando seu sistema para uma criança muito inteligente de 12 anos. Ela é esperta, faz boas perguntas, e consegue entender conceitos complexos — mas não tem seu contexto implícito.
+Imagine que você está explicando o seu sistema para uma criança de 12 anos muito esperta. Ela é inteligente, faz boas perguntas e consegue entender conceitos complexos — mas ela não tem o seu contexto implícito.
 
-Você não diria: "Faz aquele negócio das tasks ali".
+Você não diria: "Faz aquela coisa da tarefa lá."
 
-Você diria: "Quando alguém cria uma tarefa, precisamos salvar o título, verificar se a pessoa tem permissão naquele workspace, e avisar todo mundo que está olhando a lista que uma tarefa nova apareceu."
+Você diria: "Quando alguém criar uma tarefa, precisamos salvar o título, verificar se a pessoa tem permissão naquele workspace e avisar todo mundo que está olhando a lista que uma nova tarefa apareceu."
 
-**Este é exatamente o nível de clareza que suas specs precisam ter.**
+**Esse é exatamente o nível de clareza que suas specs precisam ter.**
 
 ### 4.2 Técnicas de Escrita
 
@@ -488,7 +488,7 @@ Você diria: "Quando alguém cria uma tarefa, precisamos salvar o título, verif
 O sistema deve ser rápido.
 
 # ✅ Bom
-O endpoint GET /api/v1/tasks deve responder em menos de 
+O endpoint GET /api/v1/tasks deve responder em menos de
 500ms no percentil 95 (p95) para listas de até 1000 tarefas.
 ```
 
@@ -498,9 +498,9 @@ O endpoint GET /api/v1/tasks deve responder em menos de
 # ✅ Bom - Define o que NÃO fazer
 ## Fora do Escopo
 - Este MVP não suporta tarefas recorrentes
-- Não há integração com Google Calendar (será v2)
-- Não há funcionalidade de time tracking
-- Não há dependências entre tarefas (apenas subtasks)
+- Sem integração com Google Calendar (será v2)
+- Sem funcionalidade de time tracking
+- Sem dependências entre tarefas (apenas subtasks)
 ```
 
 #### Técnica 3: Use Exemplos Concretos
@@ -512,10 +512,10 @@ Validar o título da tarefa.
 # ✅ Bom
 ## Validação de Título
 
-| Cenário | Input | Resultado |
-|---------|-------|-----------|
+| Cenário | Entrada | Resultado |
+|---------|---------|-----------|
 | Vazio | "" | Erro: "Título é obrigatório" |
-| Muito curto | "A" | Erro: "Título deve ter pelo menos 2 caracteres" |
+| Muito curto | "A" | Erro: "Título deve ter ao menos 2 caracteres" |
 | Válido | "Revisar PR #123" | Sucesso |
 | Muito longo | "A" * 501 | Erro: "Título deve ter no máximo 500 caracteres" |
 | Com emojis | "🚀 Deploy v2" | Sucesso |
@@ -527,16 +527,16 @@ Validar o título da tarefa.
 ```markdown
 ## FAQ de Implementação
 
-**P: O que acontece se deletar uma tarefa com subtasks?**
-R: Subtasks são deletadas em cascata. Confirmar com usuário antes.
+**P: O que acontece se eu excluir uma tarefa com subtasks?**
+R: As subtasks são excluídas em cascata. Confirme com o usuário antes.
 
 **P: Quem pode ver tarefas arquivadas?**
-R: Todos os membros do workspace. Arquivadas ficam em aba separada.
+R: Todos os membros do workspace. Tarefas arquivadas ficam em uma aba separada.
 
-**P: Tarefa sem assignee aparece para quem?**
-R: Para todos os membros do workspace na lista principal.
+**P: Quem vê tarefas sem assignee?**
+R: Todos os membros do workspace na lista principal.
 
-**P: Como ordenar tarefas por padrão?**
+**P: Como as tarefas são ordenadas por padrão?**
 R: Por data de criação (mais recentes primeiro), depois por prioridade.
 ```
 
@@ -552,39 +552,39 @@ R: Por data de criação (mais recentes primeiro), depois por prioridade.
 # TaskFlow Pro - Visão do Produto
 
 ## Proposta de Valor
-TaskFlow Pro é um sistema de gerenciamento de tarefas colaborativo
-que permite equipes organizarem trabalho com workspaces dedicados,
-automações inteligentes e sincronização em tempo real.
+O TaskFlow Pro é um sistema colaborativo de gerenciamento de tarefas
+que permite que times organizem o trabalho em workspaces dedicados,
+com automações inteligentes e sincronização em tempo real.
 
-## Problema que Resolvemos
-1. Equipes precisam de espaços organizados por projeto/cliente
+## Problema Que Resolvemos
+1. Times precisam de espaços organizados por projeto/cliente
 2. Tarefas repetitivas consomem tempo sem automação
-3. Falta de visibilidade em tempo real causa retrabalho
+3. Falta de visibilidade em tempo real gera retrabalho
 4. Sistemas existentes são complexos demais ou simples demais
 
 ## Solução
 - Workspaces isolados com controle de acesso
-- Sistema de tarefas flexível com subtasks e tags
-- Automações configuráveis (quando X acontece, faça Y)
+- Sistema flexível de tarefas com subtasks e tags
+- Automações configuráveis (quando X acontecer, faça Y)
 - Atualizações em tempo real via WebSocket
-- Integração com calendário para due dates
+- Integração com calendário para datas de vencimento
 
-## Usuários-Alvo
-1. **Pequenas equipes (3-10)**: Startups, agências
+## Público-Alvo
+1. **Times pequenos (3-10)**: Startups, agências
 2. **Freelancers**: Gerenciando múltiplos clientes
 3. **Times de produto**: Acompanhando features e bugs
 
-## Funcionalidades Core (MVP)
+## Features Core (MVP)
 1. Autenticação (email/senha, magic link)
 2. Workspaces com convites e roles
-3. Tarefas com subtasks, tags, due dates, assignees
+3. Tarefas com subtasks, tags, datas de vencimento, assignees
 4. Notificações em tempo real
-5. Automações simples (quando completa X, cria Y)
+5. Automações simples (quando X concluir, criar Y)
 
-## Funcionalidades Futuras (v2+)
-- Integração Google Calendar
+## Features Futuras (v2+)
+- Integração com Google Calendar
 - Tarefas recorrentes
-- Kanban boards
+- Boards Kanban
 - Time tracking
 - API pública
 
@@ -594,12 +594,12 @@ automações inteligentes e sincronização em tempo real.
 - NPS > 50
 ```
 
-### 5.2 Stack Tecnológica
+### 5.2 Tech Stack
 
 ```markdown
 # .claude/steering/tech-stack.md
 
-# Stack Tecnológica - TaskFlow Pro
+# Tech Stack - TaskFlow Pro
 ```
 
 ```mermaid
@@ -609,7 +609,7 @@ flowchart TB
             WEB["🌐 web<br/>Next.js 14"]
             API["⚡ api<br/>Fastify"]
         end
-        
+
         subgraph PACKAGES["📦 packages/"]
             UI["🎨 ui<br/>shadcn/ui"]
             DB["🗄️ database<br/>Prisma"]
@@ -617,20 +617,20 @@ flowchart TB
             EMAIL["📧 email<br/>React Email"]
             RT["📡 realtime<br/>Socket.io types"]
         end
-        
+
         subgraph TOOLING["🛠️ tooling/"]
             ESL["eslint-config"]
             TSC["typescript-config"]
             TWC["tailwind-config"]
         end
     end
-    
+
     WEB --> UI
     WEB --> UTILS
     API --> DB
     API --> UTILS
     API --> EMAIL
-    
+
     style TURBOREPO fill:#1e293b,color:#fff
     style APPS fill:#3b82f6,color:#fff
     style PACKAGES fill:#8b5cf6,color:#fff
@@ -644,12 +644,12 @@ flowchart TB
 - **Framework:** Next.js 14 (App Router)
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Estado:** React Query (server state) + Zustand (client state)
-- **Forms:** React Hook Form + Zod
+- **Formulários:** React Hook Form + Zod
 - **Real-time:** Socket.io client
 - **DnD:** @dnd-kit
 
-**Justificativa:** Next.js oferece SSR/SSG, App Router é o futuro,
-shadcn/ui dá componentes acessíveis sem lock-in.
+**Justificativa:** Next.js oferece SSR/SSG, o App Router é o futuro,
+shadcn/ui fornece componentes acessíveis sem lock-in.
 
 ### apps/api (Backend)
 
@@ -661,9 +661,9 @@ shadcn/ui dá componentes acessíveis sem lock-in.
 - **Queue:** BullMQ
 
 **Justificativa:** Fastify é mais rápido que Express, tem excelente
-suporte a TypeScript, e plugin ecosystem maduro.
+suporte a TypeScript e ecossistema maduro de plugins.
 
-## Versões Fixadas
+## Versões Pinadas
 
 ```json
 {
@@ -685,18 +685,18 @@ suporte a TypeScript, e plugin ecosystem maduro.
 
 ### Por que Turborepo?
 
-- Caching inteligente acelera builds
-- Workspace dependencies facilitam refactoring
-- Task orchestration para CI/CD
+- Cache inteligente acelera builds
+- Workspace dependencies facilitam refatoração
+- Orquestração de tasks para CI/CD
 
-### Por que Fastify ao invés de Express?
+### Por que Fastify em vez de Express?
 
 - 2-3x mais rápido
 - Suporte nativo a async/await
-- Schema validation built-in
-- Melhor TypeScript support
+- Validação por schema embutida
+- Melhor suporte a TypeScript
 
-### Por que Socket.io ao invés de WebSocket puro?
+### Por que Socket.io em vez de WebSocket puro?
 
 - Fallback automático para polling
 - Rooms para workspaces
@@ -706,7 +706,7 @@ suporte a TypeScript, e plugin ecosystem maduro.
 ### Por que BullMQ para automações?
 
 - Retry automático
-- Delayed jobs
+- Jobs com delay
 - Rate limiting
 - Dashboard (Bull Board)
 
@@ -721,7 +721,7 @@ suporte a TypeScript, e plugin ecosystem maduro.
 ```markdown
 # .claude/specs/001-auth/requirements.md
 
-# Feature: Autenticação de Usuários
+# Feature: Autenticação de Usuário
 
 ## Visão Geral
 Sistema de autenticação para usuários acessarem o TaskFlow Pro,
@@ -729,10 +729,10 @@ com suporte a email/senha e magic links.
 
 ## User Stories
 
-### US-001: Registro com Email/Senha
+### US-001: Cadastro com Email/Senha
 **Como** novo usuário
 **Quero** criar uma conta com email e senha
-**Para que** possa acessar o sistema
+**Para que** eu possa acessar o sistema
 
 **Critérios de Aceitação:**
 - [ ] Formulário: nome, email, senha
@@ -742,59 +742,59 @@ com suporte a email/senha e magic links.
 - [ ] Conta ativa após confirmar email
 
 ### US-002: Login com Email/Senha
-**Como** usuário registrado
+**Como** usuário cadastrado
 **Quero** fazer login com minhas credenciais
-**Para que** possa acessar meus workspaces
+**Para que** eu possa acessar meus workspaces
 
 **Critérios de Aceitação:**
 - [ ] Login com email + senha
-- [ ] Máximo 5 tentativas antes de bloquear (15 min)
-- [ ] Opção "lembrar-me" (30 dias)
-- [ ] Redirect para último workspace acessado
+- [ ] Máximo 5 tentativas antes do bloqueio (15 min)
+- [ ] Opção "Lembrar de mim" (30 dias)
+- [ ] Redirecionamento para o último workspace acessado
 
 ### US-003: Login com Magic Link
 **Como** usuário
 **Quero** fazer login apenas com meu email
-**Para que** não precise lembrar senha
+**Para que** eu não precise lembrar de senha
 
 **Critérios de Aceitação:**
-- [ ] Inserir apenas email
-- [ ] Receber link por email (válido 15 min)
+- [ ] Inserir apenas o email
+- [ ] Receber link por email (válido por 15 min)
 - [ ] Um clique no link faz login
 - [ ] Link de uso único
 
 ### US-004: Recuperação de Senha
 **Como** usuário que esqueceu a senha
 **Quero** redefinir minha senha
-**Para que** possa voltar a acessar minha conta
+**Para que** eu recupere o acesso à minha conta
 
 **Critérios de Aceitação:**
-- [ ] Solicitar reset via email
+- [ ] Solicitar reset por email
 - [ ] Link válido por 1 hora
 - [ ] Link de uso único
-- [ ] Notificação quando senha alterada
+- [ ] Notificação quando a senha for alterada
 
 ## Requisitos Funcionais
 
-### RF-001 (Must Have)
-O sistema DEVE armazenar senhas usando bcrypt com cost factor 12.
+### FR-001 (Must Have)
+O SISTEMA DEVE armazenar senhas usando bcrypt com fator de custo 12.
 
-### RF-002 (Must Have)
-O sistema DEVE usar JWT com expiração de 1 hora e refresh token de 7 dias.
+### FR-002 (Must Have)
+O SISTEMA DEVE usar JWT com expiração de 1 hora e refresh token de 7 dias.
 
-### RF-003 (Must Have)
-O sistema DEVE invalidar todos os refresh tokens quando senha for alterada.
+### FR-003 (Must Have)
+O SISTEMA DEVE invalidar todos os refresh tokens quando a senha for alterada.
 
-### RF-004 (Should Have)
-O sistema DEVE registrar todas as tentativas de login para auditoria.
+### FR-004 (Should Have)
+O SISTEMA DEVE registrar todas as tentativas de login para auditoria.
 
-## Requisitos Não-Funcionais
+## Requisitos Não Funcionais
 
-### RNF-001: Performance
+### NFR-001: Performance
 - Login: < 1 segundo
-- Registro: < 2 segundos
+- Cadastro: < 2 segundos
 
-### RNF-002: Segurança
+### NFR-002: Segurança
 - HTTPS obrigatório
 - Cookies com Secure, HttpOnly, SameSite
 - Rate limiting: 10 logins/minuto por IP
@@ -813,24 +813,24 @@ sequenceDiagram
     participant U as 👤 Usuário
     participant F as 🌐 Frontend
     participant A as ⚡ API
-    participant D as 🗄️ Database
+    participant D as 🗄️ Banco de Dados
     participant E as 📧 Email
-    
-    Note over U,E: Registro
+
+    Note over U,E: Cadastro
     U->>F: Preenche formulário
     F->>A: POST /auth/register
     A->>D: Criar usuário
-    A->>E: Enviar email verificação
+    A->>E: Enviar email de verificação
     A->>F: 201 Created
-    F->>U: "Verifique seu email"
-    
+    F->>U: "Confira seu email"
+
     Note over U,E: Login
     U->>F: Email + Senha
     F->>A: POST /auth/login
     A->>D: Verificar credenciais
-    A->>D: Criar session
+    A->>D: Criar sessão
     A->>F: accessToken + refreshToken
-    F->>U: Redirect para dashboard
+    F->>U: Redirecionar para o dashboard
 ```
 
 ## Modelo de Dados
@@ -844,10 +844,10 @@ model User {
   emailVerified   Boolean   @default(false)
   emailVerifiedAt DateTime?
   avatarUrl       String?
-  
+
   sessions        Session[]
   workspaceMembers WorkspaceMember[]
-  
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   lastLoginAt     DateTime?
@@ -857,14 +857,14 @@ model Session {
   id              String    @id @default(cuid())
   userId          String
   user            User      @relation(fields: [userId], references: [id])
-  
+
   refreshToken    String    @unique
   userAgent       String?
   ipAddress       String?
-  
+
   expiresAt       DateTime
   createdAt       DateTime  @default(now())
-  
+
   @@index([userId])
   @@index([refreshToken])
 }
@@ -875,9 +875,9 @@ model MagicLink {
   token           String    @unique
   expiresAt       DateTime
   usedAt          DateTime?
-  
+
   createdAt       DateTime  @default(now())
-  
+
   @@index([token])
   @@index([email])
 }
@@ -888,9 +888,9 @@ model PasswordReset {
   token           String    @unique
   expiresAt       DateTime
   usedAt          DateTime?
-  
+
   createdAt       DateTime  @default(now())
-  
+
   @@index([token])
 }
 ```
@@ -900,7 +900,7 @@ model PasswordReset {
 ```yaml
 POST /api/v1/auth/register
   Body: { name, email, password }
-  Response 201: { message: "Verifique seu email" }
+  Response 201: { message: "Confira seu email" }
 
 POST /api/v1/auth/login
   Body: { email, password, remember? }
@@ -924,7 +924,7 @@ POST /api/v1/auth/logout
 
 POST /api/v1/auth/forgot-password
   Body: { email }
-  Response 200: { message: "Email enviado se conta existir" }
+  Response 200: { message: "Email enviado se a conta existir" }
 
 POST /api/v1/auth/reset-password
   Body: { token, password }
@@ -935,7 +935,7 @@ GET /api/v1/auth/me
   Response 200: { user }
 ```
 
-## JWT Structure
+## Estrutura do JWT
 
 ```typescript
 interface JWTPayload {
@@ -949,7 +949,7 @@ interface JWTPayload {
 
 ## Segurança
 
-### Password Hashing
+### Hashing de Senha
 
 ```typescript
 import bcrypt from 'bcrypt';
@@ -977,7 +977,7 @@ const rateLimiter = {
 
 ## Fase 1: Backend - Models (0.5 dia)
 
-### Task 1.1: Schema Prisma
+### Task 1.1: Prisma Schema
 **Estimativa:** 1.5h
 - [ ] Model User
 - [ ] Model Session
@@ -985,14 +985,14 @@ const rateLimiter = {
 - [ ] Model PasswordReset
 - [ ] Migration
 
-### Task 1.2: Email Service Setup
+### Task 1.2: Setup do Serviço de Email
 **Estimativa:** 1h
 - [ ] Configurar Resend
 - [ ] Template: verificação de email
 - [ ] Template: magic link
 - [ ] Template: reset de senha
 
-## Fase 2: Backend - Serviços (1 dia)
+## Fase 2: Backend - Services (1 dia)
 
 ### Task 2.1: AuthService
 **Estimativa:** 4h
@@ -1004,7 +1004,7 @@ const rateLimiter = {
 - [ ] verifyMagicLink()
 - [ ] refreshToken()
 - [ ] logout()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 2.2: Auth Routes
 **Estimativa:** 3h
@@ -1018,11 +1018,11 @@ const rateLimiter = {
 
 ### Task 3.1: Auth Store
 **Estimativa:** 2h
-- [ ] Zustand store
+- [ ] Store Zustand
 - [ ] Persistência
-- [ ] Interceptor para token
+- [ ] Interceptor de token
 
-### Task 3.2: Páginas Auth
+### Task 3.2: Páginas de Auth
 **Estimativa:** 4h
 **Dependências:** 3.1
 - [ ] /login
@@ -1042,7 +1042,7 @@ const rateLimiter = {
 # Feature: Workspaces
 
 ## Visão Geral
-Workspaces são espaços de trabalho isolados onde equipes podem
+Workspaces são espaços de trabalho isolados em que times podem
 colaborar em tarefas. Cada workspace tem seus próprios membros,
 tarefas e configurações.
 
@@ -1051,76 +1051,76 @@ tarefas e configurações.
 ### US-001: Criar Workspace
 **Como** usuário autenticado
 **Quero** criar um novo workspace
-**Para que** possa organizar tarefas de um projeto/cliente
+**Para que** eu organize tarefas de um projeto/cliente
 
 **Critérios de Aceitação:**
 - [ ] Nome obrigatório (2-100 chars)
 - [ ] Descrição opcional
-- [ ] Ícone/cor selecionável
-- [ ] Criador é automaticamente admin
+- [ ] Ícone/cor selecionáveis
+- [ ] Criador vira admin automaticamente
 - [ ] Workspace aparece na sidebar
 
 ### US-002: Convidar Membros
-**Como** admin de um workspace
+**Como** admin do workspace
 **Quero** convidar outras pessoas
-**Para que** possam colaborar nas tarefas
+**Para que** elas possam colaborar nas tarefas
 
 **Critérios de Aceitação:**
-- [ ] Convite por email
+- [ ] Convidar por email
 - [ ] Definir role: admin ou member
 - [ ] Email de convite enviado
 - [ ] Link válido por 7 dias
-- [ ] Pode reenviar convite
+- [ ] Pode reenviar o convite
 - [ ] Pode cancelar convite pendente
 
 ### US-003: Gerenciar Membros
-**Como** admin de um workspace
+**Como** admin do workspace
 **Quero** gerenciar membros existentes
-**Para que** possa alterar permissões ou remover pessoas
+**Para que** eu altere permissões ou remova pessoas
 
 **Critérios de Aceitação:**
 - [ ] Ver lista de membros com roles
 - [ ] Alterar role de membro
 - [ ] Remover membro
-- [ ] Não pode remover a si mesmo se for único admin
+- [ ] Não pode remover a si mesmo se for o único admin
 - [ ] Membro removido perde acesso imediatamente
 
 ### US-004: Sair do Workspace
 **Como** membro de um workspace
 **Quero** sair voluntariamente
-**Para que** não veja mais esse workspace
+**Para que** eu não veja mais este workspace
 
 **Critérios de Aceitação:**
 - [ ] Um clique para sair
 - [ ] Confirmação necessária
-- [ ] Admin não pode sair se for único admin
-- [ ] Tarefas atribuídas ficam sem assignee
+- [ ] Admin não pode sair se for o único admin
+- [ ] Tarefas atribuídas ficam sem atribuído
 
 ## Requisitos Funcionais
 
-### RF-001 (Must Have)
-O sistema DEVE isolar completamente dados entre workspaces.
+### FR-001 (Must Have)
+O SISTEMA DEVE isolar completamente os dados entre workspaces.
 
-### RF-002 (Must Have)
-O sistema DEVE verificar permissão de workspace em toda operação.
+### FR-002 (Must Have)
+O SISTEMA DEVE verificar a permissão de workspace em toda operação.
 
-### RF-003 (Must Have)
-O sistema DEVE manter pelo menos um admin por workspace.
+### FR-003 (Must Have)
+O SISTEMA DEVE manter ao menos um admin por workspace.
 
-### RF-004 (Should Have)
-O sistema DEVE permitir transferir ownership do workspace.
+### FR-004 (Should Have)
+O SISTEMA DEVE permitir transferência da propriedade do workspace.
 
 ## Roles e Permissões
 
 | Ação | Admin | Member |
 |------|-------|--------|
 | Criar tarefas | ✅ | ✅ |
-| Editar qualquer tarefa | ✅ | ❌ (só próprias) |
-| Deletar tarefas | ✅ | ❌ (só próprias) |
+| Editar qualquer tarefa | ✅ | ❌ (apenas as próprias) |
+| Excluir tarefas | ✅ | ❌ (apenas as próprias) |
 | Convidar membros | ✅ | ❌ |
 | Remover membros | ✅ | ❌ |
 | Editar workspace | ✅ | ❌ |
-| Deletar workspace | ✅ | ❌ |
+| Excluir workspace | ✅ | ❌ |
 ```
 
 ```markdown
@@ -1138,13 +1138,13 @@ erDiagram
     WORKSPACE ||--o{ WORKSPACE_INVITE : "tem"
     WORKSPACE ||--o{ TASK : "contém"
     WORKSPACE ||--o{ TAG : "define"
-    
+
     USER {
         string id PK
         string name
         string email UK
     }
-    
+
     WORKSPACE {
         string id PK
         string name
@@ -1152,14 +1152,14 @@ erDiagram
         string icon
         string color
     }
-    
+
     WORKSPACE_MEMBER {
         string id PK
         string workspaceId FK
         string userId FK
         enum role "ADMIN | MEMBER"
     }
-    
+
     WORKSPACE_INVITE {
         string id PK
         string workspaceId FK
@@ -1179,15 +1179,15 @@ model Workspace {
   description String?
   icon        String?   // emoji ou URL
   color       String    @default("#6366f1") // hex
-  
+
   members     WorkspaceMember[]
   invites     WorkspaceInvite[]
   tasks       Task[]
   tags        Tag[]
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([name])
 }
 
@@ -1197,12 +1197,12 @@ model WorkspaceMember {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   role        WorkspaceRole @default(MEMBER)
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@unique([workspaceId, userId])
   @@index([workspaceId])
   @@index([userId])
@@ -1212,18 +1212,18 @@ model WorkspaceInvite {
   id          String    @id @default(cuid())
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   email       String
   role        WorkspaceRole @default(MEMBER)
   token       String    @unique
-  
+
   invitedById String
-  
+
   expiresAt   DateTime
   acceptedAt  DateTime?
-  
+
   createdAt   DateTime  @default(now())
-  
+
   @@index([workspaceId])
   @@index([email])
   @@index([token])
@@ -1247,7 +1247,7 @@ GET /api/v1/workspaces
   Response 200: Workspace[]
 
 GET /api/v1/workspaces/:id
-  Response 200: Workspace (com members)
+  Response 200: Workspace (com membros)
 
 PATCH /api/v1/workspaces/:id
   Body: { name?, description?, icon?, color? }
@@ -1256,7 +1256,7 @@ PATCH /api/v1/workspaces/:id
 DELETE /api/v1/workspaces/:id
   Response 204
 
-# Members
+# Membros
 GET /api/v1/workspaces/:id/members
   Response 200: WorkspaceMember[]
 
@@ -1267,7 +1267,7 @@ PATCH /api/v1/workspaces/:id/members/:userId
 DELETE /api/v1/workspaces/:id/members/:userId
   Response 204
 
-# Invites
+# Convites
 POST /api/v1/workspaces/:id/invites
   Body: { email, role? }
   Response 201: WorkspaceInvite
@@ -1295,15 +1295,15 @@ async function checkWorkspaceAccess(
       workspaceId_userId: { workspaceId, userId }
     }
   });
-  
+
   if (!member) {
     throw new ForbiddenError('Não é membro deste workspace');
   }
-  
+
   if (requiredRole === 'ADMIN' && member.role !== 'ADMIN') {
-    throw new ForbiddenError('Requer permissão de admin');
+    throw new ForbiddenError('Permissão de admin necessária');
   }
-  
+
   return member;
 }
 ```
@@ -1315,7 +1315,7 @@ async function checkWorkspaceAccess(
 
 ## Fase 1: Backend (1.5 dias)
 
-### Task 1.1: Schema Prisma
+### Task 1.1: Prisma Schema
 **Estimativa:** 1h
 - [ ] Model Workspace
 - [ ] Model WorkspaceMember
@@ -1332,7 +1332,7 @@ async function checkWorkspaceAccess(
 - [ ] update()
 - [ ] delete()
 - [ ] checkAccess()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 1.3: MemberService
 **Estimativa:** 3h
@@ -1342,13 +1342,13 @@ async function checkWorkspaceAccess(
 - [ ] updateRole()
 - [ ] remove()
 - [ ] leave()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 1.4: Workspace Routes
 **Estimativa:** 3h
 **Dependências:** 1.2, 1.3
 - [ ] Todos os endpoints
-- [ ] Middleware de workspace access
+- [ ] Middleware de acesso ao workspace
 - [ ] Schemas Zod
 
 ## Fase 2: Frontend (1.5 dias)
@@ -1357,18 +1357,18 @@ async function checkWorkspaceAccess(
 **Estimativa:** 2h
 - [ ] Estado do workspace atual
 - [ ] Lista de workspaces do usuário
-- [ ] Switching entre workspaces
+- [ ] Troca entre workspaces
 
 ### Task 2.2: Sidebar com Workspaces
 **Estimativa:** 3h
 - [ ] Lista de workspaces
-- [ ] Indicador do workspace atual
-- [ ] Botão criar workspace
+- [ ] Indicador de workspace atual
+- [ ] Botão de criar workspace
 - [ ] Menu de contexto
 
 ### Task 2.3: Páginas de Workspace
 **Estimativa:** 4h
-- [ ] Modal criar workspace
+- [ ] Modal de criação de workspace
 - [ ] Página de configurações
 - [ ] Gerenciamento de membros
 - [ ] Modal de convite
@@ -1384,91 +1384,91 @@ async function checkWorkspaceAccess(
 # Feature: Gerenciamento de Tarefas
 
 ## Visão Geral
-Sistema completo de tarefas com subtasks, tags, due dates,
+Sistema completo de tarefas com subtasks, tags, datas de vencimento,
 assignees e atualizações em tempo real.
 
 ## User Stories
 
 ### US-001: Criar Tarefa
-**Como** membro de um workspace
+**Como** membro do workspace
 **Quero** criar uma nova tarefa
-**Para que** possa registrar trabalho a ser feito
+**Para que** eu registre trabalho a ser feito
 
 **Critérios de Aceitação:**
 - [ ] Título obrigatório (2-500 chars)
 - [ ] Descrição opcional (markdown)
-- [ ] Due date opcional
+- [ ] Data de vencimento opcional
 - [ ] Assignees opcionais (múltiplos)
 - [ ] Tags opcionais (múltiplas)
-- [ ] Prioridade: none, low, medium, high, urgent
-- [ ] Aparece em tempo real para outros membros
+- [ ] Prioridade: nenhuma, baixa, média, alta, urgente
+- [ ] Aparece em tempo real para os outros membros
 
 ### US-002: Criar Subtask
 **Como** membro
 **Quero** criar subtasks
-**Para que** possa dividir trabalho complexo
+**Para que** eu quebre trabalho complexo
 
 **Critérios de Aceitação:**
 - [ ] Título obrigatório
-- [ ] Máximo 50 subtasks por tarefa
+- [ ] Máximo 50 subtasks por task
 - [ ] Pode marcar como concluída
-- [ ] Progresso reflete na tarefa pai
+- [ ] Progresso reflete na task pai
 
 ### US-003: Editar Tarefa
 **Como** membro
 **Quero** editar tarefas
-**Para que** possa atualizar informações
+**Para que** eu atualize informações
 
 **Critérios de Aceitação:**
 - [ ] Editar todos os campos
-- [ ] Member só edita próprias tarefas
-- [ ] Admin edita qualquer tarefa
+- [ ] Member só pode editar as próprias tarefas
+- [ ] Admin pode editar qualquer tarefa
 - [ ] Histórico de alterações mantido
 
-### US-004: Completar Tarefa
+### US-004: Concluir Tarefa
 **Como** membro
-**Quero** marcar tarefa como concluída
-**Para que** possa acompanhar progresso
+**Quero** marcar uma tarefa como concluída
+**Para que** eu acompanhe o progresso
 
 **Critérios de Aceitação:**
 - [ ] Toggle com um clique
-- [ ] Registra quem e quando completou
+- [ ] Registra quem e quando concluiu
 - [ ] Pode desfazer
-- [ ] Trigger automações configuradas
+- [ ] Dispara automações configuradas
 
 ### US-005: Filtrar e Buscar
 **Como** membro
 **Quero** filtrar e buscar tarefas
-**Para que** possa encontrar rapidamente
+**Para que** eu encontre rapidamente
 
 **Critérios de Aceitação:**
-- [ ] Busca por título/descrição
-- [ ] Filtro por status (pendente/concluída)
-- [ ] Filtro por assignee
-- [ ] Filtro por tag
-- [ ] Filtro por due date (hoje, semana, atrasadas)
+- [ ] Buscar por título/descrição
+- [ ] Filtrar por status (pendentes/concluídas)
+- [ ] Filtrar por assignee
+- [ ] Filtrar por tag
+- [ ] Filtrar por data de vencimento (hoje, semana, atrasadas)
 - [ ] Ordenar por data, prioridade, título
 
 ## Requisitos Funcionais
 
-### RF-001 (Must Have)
-O sistema DEVE validar permissões antes de qualquer operação.
+### FR-001 (Must Have)
+O SISTEMA DEVE validar permissões antes de qualquer operação.
 
-### RF-002 (Must Have)
-O sistema DEVE atualizar em tempo real via WebSocket.
+### FR-002 (Must Have)
+O SISTEMA DEVE atualizar em tempo real via WebSocket.
 
-### RF-003 (Must Have)
-O sistema DEVE manter histórico de alterações (audit log).
+### FR-003 (Must Have)
+O SISTEMA DEVE manter histórico de alterações (audit log).
 
-### RF-004 (Should Have)
-O sistema DEVE suportar drag-and-drop para reordenar.
+### FR-004 (Should Have)
+O SISTEMA DEVE suportar drag-and-drop para reordenação.
 
-## Requisitos Não-Funcionais
+## Requisitos Não Funcionais
 
-### RNF-001: Performance
+### NFR-001: Performance
 - Listar tarefas: < 500ms (até 1000 tarefas)
 - Criar tarefa: < 300ms
-- Atualização real-time: < 200ms latência
+- Atualização em tempo real: latência < 200ms
 ```
 
 ```markdown
@@ -1482,22 +1482,21 @@ O sistema DEVE suportar drag-and-drop para reordenar.
 ```mermaid
 stateDiagram-v2
     [*] --> TODO: Criar Tarefa
-    
+
     TODO --> IN_PROGRESS: Iniciar
-    TODO --> DONE: Completar
+    TODO --> DONE: Concluir
     TODO --> ARCHIVED: Arquivar
-    
+
     IN_PROGRESS --> TODO: Pausar
-    IN_PROGRESS --> DONE: Completar
+    IN_PROGRESS --> DONE: Concluir
     IN_PROGRESS --> ARCHIVED: Arquivar
-    
+
     DONE --> TODO: Reabrir
     DONE --> ARCHIVED: Arquivar
-    
+
     ARCHIVED --> TODO: Restaurar
-    
+
     DONE --> [*]
-    ARCHIVED --> [*]
 ```
 
 ## Modelo de Dados
@@ -1507,32 +1506,32 @@ model Task {
   id          String    @id @default(cuid())
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   title       String
   description String?   // Markdown
   priority    TaskPriority @default(NONE)
   status      TaskStatus @default(TODO)
-  
+
   dueDate     DateTime?
   completedAt DateTime?
   completedBy String?
-  
+
   position    Int       @default(0)  // Para ordenação
-  
-  // Relações
+
+  // Relations
   createdById String
   createdBy   User      @relation("TaskCreator", fields: [createdById], references: [id])
-  
+
   assignees   TaskAssignee[]
   tags        TaskTag[]
   subtasks    Subtask[]
   activities  TaskActivity[]
-  
+
   parentId    String?   // Para subtasks aninhadas (futuro)
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([workspaceId, status])
   @@index([workspaceId, dueDate])
   @@index([createdById])
@@ -1542,15 +1541,15 @@ model Subtask {
   id          String    @id @default(cuid())
   taskId      String
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  
+
   title       String
   completed   Boolean   @default(false)
   completedAt DateTime?
   position    Int       @default(0)
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([taskId])
 }
 
@@ -1560,9 +1559,9 @@ model TaskAssignee {
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   assignedAt  DateTime  @default(now())
-  
+
   @@unique([taskId, userId])
   @@index([taskId])
   @@index([userId])
@@ -1572,14 +1571,14 @@ model Tag {
   id          String    @id @default(cuid())
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   name        String
   color       String    @default("#6b7280")
-  
+
   tasks       TaskTag[]
-  
+
   createdAt   DateTime  @default(now())
-  
+
   @@unique([workspaceId, name])
   @@index([workspaceId])
 }
@@ -1590,7 +1589,7 @@ model TaskTag {
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   tagId       String
   tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  
+
   @@unique([taskId, tagId])
 }
 
@@ -1600,14 +1599,14 @@ model TaskActivity {
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-  
+
   action      String    // created, updated, completed, assigned, etc
   field       String?   // campo alterado
   oldValue    String?
   newValue    String?
-  
+
   createdAt   DateTime  @default(now())
-  
+
   @@index([taskId, createdAt])
 }
 
@@ -1677,7 +1676,7 @@ DELETE /api/v1/workspaces/:workspaceId/tags/:tagId
   Response 204
 ```
 
-## Real-time Events
+## Eventos em Tempo Real
 
 ```typescript
 // Eventos emitidos via Socket.io
@@ -1691,10 +1690,10 @@ interface TaskEvents {
 }
 
 // Room = workspace:${workspaceId}
-// Todos os membros do workspace recebem eventos
+// Todos os membros do workspace recebem os eventos
 ```
 
-## Activity Logging
+## Log de Atividades
 
 ```typescript
 async function logActivity(
@@ -1731,7 +1730,7 @@ async function logActivity(
 
 ## Fase 1: Backend - Models (0.5 dia)
 
-### Task 1.1: Schema Prisma
+### Task 1.1: Prisma Schema
 **Estimativa:** 2h
 - [ ] Model Task
 - [ ] Model Subtask
@@ -1742,7 +1741,7 @@ async function logActivity(
 - [ ] Enums
 - [ ] Migration
 
-## Fase 2: Backend - Serviços (2 dias)
+## Fase 2: Backend - Services (2 dias)
 
 ### Task 2.1: TaskService
 **Estimativa:** 5h
@@ -1754,7 +1753,7 @@ async function logActivity(
 - [ ] delete()
 - [ ] updateStatus()
 - [ ] reorder()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 2.2: SubtaskService
 **Estimativa:** 2h
@@ -1763,7 +1762,7 @@ async function logActivity(
 - [ ] update()
 - [ ] delete()
 - [ ] toggleComplete()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 2.3: TagService
 **Estimativa:** 1.5h
@@ -1772,14 +1771,14 @@ async function logActivity(
 - [ ] findAllByWorkspace()
 - [ ] update()
 - [ ] delete()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 2.4: ActivityService
 **Estimativa:** 1.5h
 **Dependências:** 1.1
 - [ ] log()
 - [ ] findByTask()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 2.5: Task Routes
 **Estimativa:** 3h
@@ -1790,7 +1789,7 @@ async function logActivity(
 
 ## Fase 3: Real-time (0.5 dia)
 
-### Task 3.1: Socket.io Setup
+### Task 3.1: Setup do Socket.io
 **Estimativa:** 2h
 - [ ] Configurar servidor Socket.io
 - [ ] Middleware de autenticação
@@ -1801,17 +1800,17 @@ async function logActivity(
 **Dependências:** 3.1
 - [ ] Emitir eventos em create/update/delete
 - [ ] Integrar com TaskService
-- [ ] Testes
+- [ ] Tests
 
 ## Fase 4: Frontend (2 dias)
 
 ### Task 4.1: Task Store
 **Estimativa:** 2h
-- [ ] React Query hooks
+- [ ] Hooks do React Query
 - [ ] Optimistic updates
-- [ ] Socket.io listeners
+- [ ] Listeners do Socket.io
 
-### Task 4.2: Task List Component
+### Task 4.2: Componente de Lista
 **Estimativa:** 4h
 **Dependências:** 4.1
 - [ ] Lista de tarefas
@@ -1819,16 +1818,16 @@ async function logActivity(
 - [ ] Loading states
 - [ ] Empty state
 
-### Task 4.3: Task Form
+### Task 4.3: Formulário de Tarefa
 **Estimativa:** 3h
 - [ ] Criar/editar tarefa
-- [ ] Seletor de assignees
-- [ ] Seletor de tags
+- [ ] Seletor de assignee
+- [ ] Seletor de tag
 - [ ] Date picker
 
-### Task 4.4: Task Detail
+### Task 4.4: Detalhe da Tarefa
 **Estimativa:** 4h
-- [ ] Visualização completa
+- [ ] Visão completa
 - [ ] Subtasks
 - [ ] Activity log
 - [ ] Edição inline
@@ -1837,7 +1836,7 @@ async function logActivity(
 **Estimativa:** 3h
 **Dependências:** 4.2
 - [ ] Reordenar tarefas
-- [ ] @dnd-kit integration
+- [ ] Integração com @dnd-kit
 ```
 
 ---
@@ -1851,12 +1850,12 @@ async function logActivity(
 
 ## Visão Geral
 Permitir que usuários configurem automações simples do tipo
-"quando X acontecer, faça Y" para reduzir trabalho manual.
+"quando X acontecer, faça Y" para reduzir o trabalho manual.
 
 ## User Stories
 
 ### US-001: Criar Automação
-**Como** admin de workspace
+**Como** admin do workspace
 **Quero** criar uma automação
 **Para que** ações repetitivas sejam automatizadas
 
@@ -1864,51 +1863,51 @@ Permitir que usuários configurem automações simples do tipo
 - [ ] Nome obrigatório
 - [ ] Selecionar trigger (quando)
 - [ ] Selecionar action (então)
-- [ ] Pode ativar/desativar
-- [ ] Máximo 10 automações por workspace
+- [ ] Pode habilitar/desabilitar
+- [ ] Máximo de 10 automações por workspace
 
 ### US-002: Triggers Disponíveis
-- Quando tarefa for criada
-- Quando tarefa for completada
-- Quando tarefa for atribuída a alguém
-- Quando due date passar (tarefa atrasada)
-- Quando tag for adicionada
+- Quando uma tarefa for criada
+- Quando uma tarefa for concluída
+- Quando uma tarefa for atribuída a alguém
+- Quando a data de vencimento passar (tarefa atrasada)
+- Quando uma tag for adicionada
 
 ### US-003: Actions Disponíveis
-- Criar nova tarefa
+- Criar uma nova tarefa
 - Atribuir tarefa a alguém
 - Adicionar tag
 - Enviar notificação
-- Mover para status
+- Mudar status
 
 ### US-004: Ver Histórico
 **Como** admin
-**Quero** ver histórico de execuções
-**Para que** possa debugar problemas
+**Quero** ver o histórico de execução
+**Para que** eu possa depurar problemas
 
 **Critérios de Aceitação:**
 - [ ] Lista de execuções recentes
-- [ ] Status: success, failed
-- [ ] Detalhes do erro se falhou
+- [ ] Status: sucesso, falha
+- [ ] Detalhes do erro em caso de falha
 - [ ] Timestamp
 
 ## Requisitos Funcionais
 
-### RF-001 (Must Have)
-O sistema DEVE executar automações de forma assíncrona (queue).
+### FR-001 (Must Have)
+O SISTEMA DEVE executar automações de forma assíncrona (fila).
 
-### RF-002 (Must Have)
-O sistema DEVE evitar loops infinitos (automação triggera outra).
+### FR-002 (Must Have)
+O SISTEMA DEVE prevenir loops infinitos (uma automação dispara outra).
 
-### RF-003 (Should Have)
-O sistema DEVE permitir condições nas automações (se tag = X).
+### FR-003 (Should Have)
+O SISTEMA DEVE permitir condições nas automações (se tag = X).
 
 ## Exemplo de Automação
 
 ```
 
-Nome: "Auto-assign bugs"
-Trigger: Quando tarefa for criada
+Nome: "Auto-atribuir bugs"
+Trigger: Quando uma tarefa for criada
 Condição: Tag contém "bug"
 Action: Atribuir a "<dev@empresa.com>"
 
@@ -1928,25 +1927,25 @@ flowchart LR
     subgraph TRIGGER["🎯 Trigger"]
         EVT[Evento<br/>task:created]
     end
-    
-    subgraph QUEUE["📬 Queue"]
+
+    subgraph QUEUE["📬 Fila"]
         BQ[BullMQ]
     end
-    
+
     subgraph WORKER["⚙️ Worker"]
         PROC[Processar]
         COND{Condições?}
         EXEC[Executar<br/>Action]
         LOG[Registrar<br/>Execução]
     end
-    
+
     EVT --> BQ
     BQ --> PROC
     PROC --> COND
     COND -->|Sim| EXEC
     COND -->|Não| LOG
     EXEC --> LOG
-    
+
     style TRIGGER fill:#3b82f6,color:#fff
     style QUEUE fill:#f59e0b,color:#fff
     style WORKER fill:#10b981,color:#fff
@@ -1959,20 +1958,20 @@ model Automation {
   id          String    @id @default(cuid())
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   name        String
   description String?
   enabled     Boolean   @default(true)
-  
+
   trigger     Json      // { type: "task_created", conditions?: {...} }
   action      Json      // { type: "assign_task", params: { userId: "..." } }
-  
+
   executions  AutomationExecution[]
-  
+
   createdById String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([workspaceId, enabled])
 }
 
@@ -1980,15 +1979,15 @@ model AutomationExecution {
   id           String    @id @default(cuid())
   automationId String
   automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
-  
+
   triggeredBy  String    // taskId que disparou
   status       ExecutionStatus
   error        String?
   result       Json?
-  
+
   startedAt    DateTime  @default(now())
   completedAt  DateTime?
-  
+
   @@index([automationId, startedAt])
 }
 
@@ -2000,10 +1999,10 @@ enum ExecutionStatus {
 }
 ```
 
-## Trigger Types
+## Tipos de Trigger
 
 ```typescript
-type TriggerType = 
+type TriggerType =
   | 'task_created'
   | 'task_completed'
   | 'task_assigned'
@@ -2013,14 +2012,14 @@ type TriggerType =
 interface TriggerConfig {
   type: TriggerType;
   conditions?: {
-    tagIds?: string[];      // Se tiver alguma dessas tags
-    assigneeIds?: string[]; // Se atribuído a algum desses
+    tagIds?: string[];      // Se tiver qualquer uma destas tags
+    assigneeIds?: string[]; // Se atribuída a algum destes
     priority?: TaskPriority[];
   };
 }
 ```
 
-## Action Types
+## Tipos de Action
 
 ```typescript
 type ActionType =
@@ -2036,16 +2035,16 @@ interface ActionConfig {
     // Para create_task
     title?: string;
     assigneeIds?: string[];
-    
+
     // Para assign_task
     userId?: string;
-    
+
     // Para add_tag
     tagId?: string;
-    
+
     // Para send_notification
     message?: string;
-    
+
     // Para change_status
     status?: TaskStatus;
   };
@@ -2055,10 +2054,10 @@ interface ActionConfig {
 ## Prevenção de Loops
 
 ```typescript
-// Contexto passado para cada execução
+// Contexto passado a cada execução
 interface AutomationContext {
   depth: number;        // Quantas automações já executaram
-  sourceTaskId: string; // Tarefa original que triggou
+  sourceTaskId: string; // Task original que disparou
   executedAutomations: string[]; // IDs já executados
 }
 
@@ -2080,7 +2079,7 @@ function canExecute(context: AutomationContext, automationId: string): boolean {
 
 ## Fase 1: Backend (1.5 dias)
 
-### Task 1.1: Schema Prisma
+### Task 1.1: Prisma Schema
 **Estimativa:** 1h
 - [ ] Model Automation
 - [ ] Model AutomationExecution
@@ -2095,7 +2094,7 @@ function canExecute(context: AutomationContext, automationId: string): boolean {
 - [ ] update()
 - [ ] delete()
 - [ ] toggle()
-- [ ] Testes
+- [ ] Tests
 
 ### Task 1.3: AutomationEngine
 **Estimativa:** 5h
@@ -2103,41 +2102,41 @@ function canExecute(context: AutomationContext, automationId: string): boolean {
 - [ ] findMatchingAutomations()
 - [ ] evaluateConditions()
 - [ ] executeAction()
-- [ ] Loop prevention
-- [ ] Testes
+- [ ] Prevenção de loops
+- [ ] Tests
 
-### Task 1.4: Queue Setup
+### Task 1.4: Setup da Fila
 **Estimativa:** 2h
-- [ ] BullMQ configuration
-- [ ] Worker para automations
-- [ ] Retry logic
+- [ ] Configuração do BullMQ
+- [ ] Worker para automações
+- [ ] Lógica de retry
 
-### Task 1.5: Event Integration
+### Task 1.5: Integração de Eventos
 **Estimativa:** 2h
 **Dependências:** 1.3, 1.4
-- [ ] Hook em TaskService
-- [ ] Enfileirar automations
+- [ ] Hook no TaskService
+- [ ] Enfileirar automações
 - [ ] Testes de integração
 
 ## Fase 2: Frontend (1 dia)
 
-### Task 2.1: Automation Form
+### Task 2.1: Formulário de Automação
 **Estimativa:** 3h
 - [ ] Seletor de trigger
 - [ ] Seletor de action
 - [ ] Configuração de parâmetros
 - [ ] Preview
 
-### Task 2.2: Automation List
+### Task 2.2: Lista de Automações
 **Estimativa:** 2h
 - [ ] Lista com toggle on/off
-- [ ] Status de última execução
-- [ ] Editar/deletar
+- [ ] Status da última execução
+- [ ] Editar/excluir
 
-### Task 2.3: Execution History
+### Task 2.3: Histórico de Execuções
 **Estimativa:** 2h
 - [ ] Lista de execuções
-- [ ] Detalhes de erro
+- [ ] Detalhes do erro
 - [ ] Filtros
 ```
 
@@ -2151,15 +2150,15 @@ function canExecute(context: AutomationContext, automationId: string): boolean {
 # Feature: Notificações
 
 ## Visão Geral
-Sistema de notificações em tempo real para manter usuários
+Sistema de notificações em tempo real para manter os usuários
 informados sobre atividades relevantes.
 
 ## User Stories
 
 ### US-001: Receber Notificações In-App
 **Como** usuário
-**Quero** ver notificações na aplicação
-**Para que** saiba de atualizações importantes
+**Quero** ver as notificações na aplicação
+**Para que** eu fique sabendo de atualizações importantes
 
 **Critérios de Aceitação:**
 - [ ] Badge com contador no header
@@ -2171,7 +2170,7 @@ informados sobre atividades relevantes.
 ### US-002: Configurar Preferências
 **Como** usuário
 **Quero** configurar quais notificações receber
-**Para que** não seja sobrecarregado
+**Para que** eu não fique sobrecarregado
 
 **Critérios de Aceitação:**
 - [ ] Toggle por tipo de notificação
@@ -2183,7 +2182,7 @@ informados sobre atividades relevantes.
 | Tipo | Descrição |
 |------|-----------|
 | task_assigned | Tarefa atribuída a você |
-| task_completed | Tarefa que você criou foi completada |
+| task_completed | Tarefa criada por você foi concluída |
 | task_due_soon | Sua tarefa vence em 24h |
 | task_overdue | Sua tarefa está atrasada |
 | mention | Você foi mencionado |
@@ -2197,44 +2196,44 @@ informados sobre atividades relevantes.
 # Design: Notificações
 ```
 
-### Fluxo de Notificações
+### Fluxo de Notificação
 
 ```mermaid
 flowchart TB
     subgraph SOURCES["📤 Fontes"]
-        T[Tarefas]
+        T[Tasks]
         A[Automações]
         W[Workspaces]
     end
-    
+
     subgraph SERVICE["🔔 NotificationService"]
         CREATE[Criar<br/>Notificação]
-        CHECK[Verificar<br/>Preferências]
-        SAVE[(Salvar<br/>no DB)]
+        CHECK[Checar<br/>Preferências]
+        SAVE[(Salvar<br/>no Banco)]
     end
-    
+
     subgraph DELIVERY["📬 Entrega"]
-        WS[Socket.io<br/>Real-time]
+        WS[Socket.io<br/>Tempo Real]
         EMAIL[Email<br/>Resend]
     end
-    
+
     subgraph CLIENT["👤 Cliente"]
-        BADGE[Badge<br/>Contador]
+        BADGE[Contador<br/>do Badge]
         LIST[Lista de<br/>Notificações]
     end
-    
+
     T --> CREATE
     A --> CREATE
     W --> CREATE
-    
+
     CREATE --> CHECK
     CHECK --> SAVE
     SAVE --> WS
     SAVE -.->|se habilitado| EMAIL
-    
+
     WS --> BADGE
     WS --> LIST
-    
+
     style SOURCES fill:#3b82f6,color:#fff
     style SERVICE fill:#8b5cf6,color:#fff
     style DELIVERY fill:#f59e0b,color:#fff
@@ -2248,21 +2247,21 @@ model Notification {
   id          String    @id @default(cuid())
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   type        NotificationType
   title       String
   message     String?
-  
+
   // Contexto
   workspaceId String?
   taskId      String?
   actorId     String?   // Quem causou a notificação
-  
+
   read        Boolean   @default(false)
   readAt      DateTime?
-  
+
   createdAt   DateTime  @default(now())
-  
+
   @@index([userId, read, createdAt])
   @@index([userId, createdAt])
 }
@@ -2271,11 +2270,11 @@ model NotificationPreference {
   id          String    @id @default(cuid())
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   type        NotificationType
   inApp       Boolean   @default(true)
   email       Boolean   @default(false)
-  
+
   @@unique([userId, type])
 }
 
@@ -2314,7 +2313,7 @@ PATCH /api/v1/notifications/preferences/:type
 ## Real-time
 
 ```typescript
-// Evento enviado para user específico
+// Evento enviado a usuário específico
 interface NotificationEvent {
   type: 'notification:new';
   payload: Notification;
@@ -2329,37 +2328,37 @@ interface NotificationEvent {
 
 ---
 
-## Capítulo 11: Comandos Slash Customizados
+## Capítulo 11: Slash Commands Customizados
 
 ```markdown
 # .claude/commands/spec-new.md
 
 Crie uma nova especificação para a feature "$ARGUMENTS".
 
-1. Criar diretório `.claude/specs/XXX-$ARGUMENTS/`
-2. Criar template de requirements.md
-3. Criar placeholder para design.md
-4. Criar placeholder para tasks.md
-5. Criar .status com "requirements:draft"
+1. Crie o diretório `.claude/specs/XXX-$ARGUMENTS/`
+2. Crie o template de requirements.md
+3. Crie um placeholder para design.md
+4. Crie um placeholder para tasks.md
+5. Crie um .status com "requirements:draft"
 
-NÃO preencha conteúdos. Apenas estrutura.
+NÃO preencha conteúdo. Apenas a estrutura.
 ```
 
 ```markdown
 # .claude/commands/spec-requirements.md
 
-Ajude a preencher requisitos da spec atual.
+Ajude a preencher requisitos para a spec atual.
 
-1. Encontre spec com status "requirements:draft"
+1. Encontre a spec com status "requirements:draft"
 2. Faça perguntas ao usuário:
    - Qual problema resolve?
    - Quem são os usuários?
-   - Quais fluxos principais?
-   - Quais casos de erro?
+   - Quais os fluxos principais?
+   - Quais os casos de erro?
    - Requisitos de performance?
 3. Preencha requirements.md
 4. Apresente para revisão
-5. Após aprovação, atualize status para "requirements:approved"
+5. Após aprovação, atualize o status para "requirements:approved"
 
 NÃO avance sem aprovação explícita.
 ```
@@ -2367,33 +2366,33 @@ NÃO avance sem aprovação explícita.
 ```markdown
 # .claude/commands/spec-design.md
 
-Crie documento de design baseado nos requisitos aprovados.
+Crie o documento de design com base nos requirements aprovados.
 
-1. Leia spec com status "requirements:approved"
+1. Leia a spec com status "requirements:approved"
 2. Leia tech-stack.md
-3. Crie design incluindo:
+3. Crie o design incluindo:
    - Modelo de dados (Prisma)
    - API endpoints
    - Fluxos de dados
    - Decisões técnicas justificadas
-   - Real-time events (se aplicável)
+   - Eventos em tempo real (se aplicável)
 4. Apresente para revisão
-5. Após aprovação, atualize status para "design:approved"
+5. Após aprovação, atualize o status para "design:approved"
 ```
 
 ```markdown
 # .claude/commands/spec-tasks.md
 
-Decomponha design em tasks implementáveis.
+Decomponha o design em tasks implementáveis.
 
-1. Leia spec com status "design:approved"
-2. Crie tasks seguindo regras:
+1. Leia a spec com status "design:approved"
+2. Crie tasks seguindo as regras:
    - Cada task: 2-4 horas
    - Dependências claras
-   - Testável independentemente
+   - Testáveis de forma independente
 3. Organize em fases
 4. Apresente para revisão
-5. Após aprovação, atualize status para "tasks:approved"
+5. Após aprovação, atualize o status para "tasks:approved"
 ```
 
 ```markdown
@@ -2403,37 +2402,37 @@ Implemente a task especificada.
 
 Uso: /spec-implement [task-id]
 
-1. Encontre task com ID "$ARGUMENTS"
-2. Verifique dependências completas
+1. Encontre a task com ID "$ARGUMENTS"
+2. Verifique se as dependências estão concluídas
 3. Implemente seguindo:
-   - Convenções do projeto
-   - Design aprovado
-   - Escreva testes junto
-4. Marque task como [x]
-5. Sugira próxima task
+   - As convenções do projeto
+   - O design aprovado
+   - Escreva testes em paralelo
+4. Marque a task como [x]
+5. Sugira a próxima task
 
 NUNCA modifique specs sem permissão.
 ```
 
 ---
 
-## Capítulo 12: Subagentes Especializados
+## Capítulo 12: Sub-agentes Especializados
 
 ```mermaid
 flowchart LR
-    subgraph AGENTS["🤖 Subagentes"]
+    subgraph AGENTS["🤖 Sub-agentes"]
         ARC["🏗️ Architect<br/>Decisões técnicas"]
         IMP["💻 Implementer<br/>Código limpo"]
         REV["🔍 Reviewer<br/>Qualidade"]
     end
-    
+
     REQ[Requirements] --> ARC
     ARC --> DES[Design]
     DES --> IMP
-    IMP --> COD[Code]
+    IMP --> COD[Código]
     COD --> REV
     REV -->|feedback| IMP
-    
+
     style ARC fill:#3b82f6,color:#fff
     style IMP fill:#10b981,color:#fff
     style REV fill:#f59e0b,color:#fff
@@ -2442,7 +2441,7 @@ flowchart LR
 ```markdown
 # .claude/agents/architect.md
 
-# Subagente: Architect
+# Sub-agente: Architect
 
 ## Papel
 Arquiteto de software focado em decisões técnicas e trade-offs.
@@ -2450,44 +2449,44 @@ Arquiteto de software focado em decisões técnicas e trade-offs.
 ## Responsabilidades
 - Decisões arquiteturais
 - Interfaces entre componentes
-- Escolha de tecnologias
+- Escolhas de tecnologia
 - Identificação de riscos
 
 ## Regras
-1. SEMPRE justifique decisões
+1. SEMPRE justifique as decisões
 2. SEMPRE considere trade-offs
 3. NUNCA escreva código de implementação
-4. PRIORIZE simplicidade
+4. PRIORIZE a simplicidade
 ```
 
 ```markdown
 # .claude/agents/implementer.md
 
-# Subagente: Implementer
+# Sub-agente: Implementer
 
 ## Papel
 Desenvolvedor focado em implementação limpa e testável.
 
 ## Regras
 1. SIGA a spec exatamente
-2. ESCREVA testes junto com código
-3. USE tipos TypeScript estritos
+2. ESCREVA testes junto com o código
+3. USE tipos estritos de TypeScript
 4. PARE se encontrar ambiguidade
 ```
 
 ```markdown
 # .claude/agents/reviewer.md
 
-# Subagente: Reviewer
+# Sub-agente: Reviewer
 
 ## Papel
-Code reviewer focado em qualidade e segurança.
+Revisor de código focado em qualidade e segurança.
 
 ## Checklist
-- [ ] Segue convenções
+- [ ] Segue as convenções
 - [ ] Tipos corretos
-- [ ] Error handling adequado
-- [ ] Testes cobrem casos principais
+- [ ] Tratamento de erros adequado
+- [ ] Testes cobrem os casos principais
 - [ ] Sem vulnerabilidades óbvias
 - [ ] Performance aceitável
 ```
@@ -2496,34 +2495,34 @@ Code reviewer focado em qualidade e segurança.
 
 ## Capítulo 13: Conclusão
 
-### Recapitulação
+### Recapitulando
 
-1. **SDD resolve o problema de contexto:** Agentes de IA precisam de especificações explícitas.
+1. **SDD resolve o problema de contexto:** agentes de IA precisam de especificações explícitas.
 
 2. **Quatro pilares:** Requirements → Design → Tasks → Implementation, com gates de aprovação.
 
-3. **Specs efetivas:** Seja específico, use exemplos, antecipe perguntas, defina escopo negativo.
+3. **Specs eficazes:** seja específico, use exemplos, antecipe perguntas, defina o escopo negativo.
 
-4. **Estrutura organizada:** CLAUDE.md conciso, steering files, specs por feature.
+4. **Estrutura organizada:** CLAUDE.md conciso, arquivos de steering, specs por feature.
 
-5. **Workflow prático:** Comandos slash, subagentes, integração com Git.
+5. **Workflow prático:** slash commands, sub-agentes, integração com Git.
 
-### O Mindset SDD
+### A Mentalidade SDD
 
 > "Investir tempo pensando antes de fazer economiza tempo total."
 
-Quando você trabalha com agentes de IA, mover rápido sem direção é apenas uma forma mais rápida de criar dívida técnica.
+Quando você trabalha com agentes de IA, andar rápido sem direção é só uma forma mais rápida de criar dívida técnica.
 
 ### Próximos Passos
 
-1. **Comece pequeno:** Uma feature, spec completa
-2. **Itere:** Adapte templates ao seu estilo
+1. **Comece pequeno:** uma feature, spec completa
+2. **Itere:** adapte os templates ao seu estilo
 3. **Compartilhe:** SDD funciona melhor em equipe
-4. **Contribua:** Melhore templates, documente aprendizados
+4. **Contribua:** melhore os templates, documente aprendizados
 
 ---
 
-## Apêndice A: Templates Prontos
+## Apêndice A: Templates Prontos para Uso
 
 ### Template: requirements.md
 
@@ -2546,12 +2545,12 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 
 ## Requisitos Funcionais
 
-### RF-001 (Must Have)
+### FR-001 (Must Have)
 [Requisito]
 
-## Requisitos Não-Funcionais
+## Requisitos Não Funcionais
 
-### RNF-001: Performance
+### NFR-001: Performance
 [Métricas]
 
 ## Fora do Escopo
@@ -2566,19 +2565,19 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 ```markdown
 # Design: [Feature]
 
-> **Requisitos:** @requirements.md
+> **Requirements:** @requirements.md
 > **Status:** [Draft | Em Revisão | Aprovado]
 
 ## 1. Modelo de Dados
-[Prisma schema]
+[Schema Prisma]
 
 ## 2. API Endpoints
-[Endpoints YAML]
+[Endpoints em YAML]
 
 ## 3. Fluxos
 [Diagramas Mermaid]
 
-## 4. Real-time Events
+## 4. Eventos em Tempo Real
 [Se aplicável]
 
 ## 5. Decisões Técnicas
@@ -2601,7 +2600,7 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 
 - [ ] [Subtask]
 
-**Critérios de Aceite:**
+**Critérios de Aceitação:**
 - [Critério]
 
 **Arquivos:**
@@ -2646,9 +2645,9 @@ Quando você trabalha com agentes de IA, mover rápido sem direção é apenas u
 
 ## Apêndice D: Tipos de Diagramas Mermaid
 
-Este ebook utiliza diagramas Mermaid para visualização. Aqui estão os tipos usados:
+Este ebook usa diagramas Mermaid para visualização. Aqui estão os tipos usados:
 
-### Flowchart (Fluxogramas)
+### Flowchart
 
 ```mermaid
 flowchart LR
@@ -2657,17 +2656,17 @@ flowchart LR
     B -->|Não| D[Ação 2]
 ```
 
-### Sequence Diagram (Sequência)
+### Sequence Diagram
 
 ```mermaid
 sequenceDiagram
     participant A as Cliente
     participant B as Servidor
-    A->>B: Request
-    B->>A: Response
+    A->>B: Requisição
+    B->>A: Resposta
 ```
 
-### State Diagram (Estados)
+### State Diagram
 
 ```mermaid
 stateDiagram-v2
@@ -2680,7 +2679,7 @@ stateDiagram-v2
 
 ```mermaid
 erDiagram
-    USER ||--o{ TASK : creates
+    USER ||--o{ TASK : cria
     TASK {
         string id
         string title
@@ -2689,8 +2688,8 @@ erDiagram
 
 ---
 
-*Este ebook foi criado para desenvolvedores experientes adotarem Spec-Driven Development com Claude Code.*
+*Este ebook foi criado para desenvolvedores experientes adotarem Spec-Driven Development com o Claude Code.*
 
-*O TaskFlow Pro é um projeto exemplo para ilustrar conceitos. As specs são funcionais e adaptáveis para projetos reais.*
+*O TaskFlow Pro é um projeto de exemplo para ilustrar conceitos. As specs são funcionais e adaptáveis para projetos reais.*
 
-*Diagramas renderizados com Mermaid - compatível com GitHub, VS Code e principais editores Markdown.*
+*Diagramas renderizados com Mermaid - compatíveis com GitHub, VS Code e os principais editores de Markdown.*

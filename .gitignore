@@ -1,0 +1,9 @@
+node_modules/
+dist/
+# All Typst output is generated into typst/ by the kit — nothing here is authored.
+typst/
+
+# Local tool state
+.mise.local.toml
+*.log
+.DS_Store

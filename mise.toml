@@ -1,0 +1,8 @@
+[tools]
+node = "25"
+"github:typst/typst" = "latest"
+
+[env]
+# Tell mmdc / puppeteer to use system Chromium if available, falling back to
+# the bundled one. Override locally in .mise.local.toml if needed.
+PUPPETEER_SKIP_DOWNLOAD = "false"

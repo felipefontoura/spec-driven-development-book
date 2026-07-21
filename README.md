@@ -1,70 +1,70 @@
 # 📘 Spec-Driven Development
 
-> **O Guia Definitivo para Construir Produtos com IA**
+> **The Definitive Guide to Building Products with AI**
 
-Um ebook completo e prático sobre como usar especificações para maximizar a produtividade com agentes de IA como Claude Code, Cursor e Copilot.
+A complete and practical ebook on how to use specifications to maximize productivity with AI agents like Claude Code, Cursor, and Copilot.
 
 ---
 
-## 🎯 O Que Você Vai Aprender
+## 🎯 What You'll Learn
 
-- **Metodologia SDD** — Requirements → Design → Tasks → Implementation
-- **Estrutura de Specs** — Templates prontos para uso imediato
-- **Workflow Prático** — Comandos slash e subagentes especializados
-- **Projeto Completo** — TaskFlow Pro como exemplo end-to-end
+- **SDD Methodology** — Requirements → Design → Tasks → Implementation
+- **Spec Structure** — Ready-to-use templates for immediate use
+- **Practical Workflow** — Slash commands and specialized sub-agents
+- **Complete Project** — TaskFlow Pro as an end-to-end example
 
-## 📖 Conteúdo
+## 📖 Contents
 
-### Parte I: Fundamentos
+### Part I: Fundamentals
 
-1. O Problema que Ninguém Fala
-2. O Que é Spec-Driven Development
-3. Anatomia de uma Especificação
-4. Escrevendo Specs Efetivas
+1. The Problem Nobody Talks About
+2. What is Spec-Driven Development
+3. Anatomy of a Specification
+4. Writing Effective Specs
 
-### Parte II: Specs Completas (Projeto TaskFlow Pro)
+### Part II: Complete Specs (TaskFlow Pro Project)
 
-5. O Projeto TaskFlow Pro
-2. Spec de Autenticação
-3. Spec de Workspaces
-4. Spec de Tarefas
-5. Spec de Automações
-6. Spec de Notificações
+1. The TaskFlow Pro Project
+2. Authentication Spec
+3. Workspaces Spec
+4. Tasks Spec
+5. Automations Spec
+6. Notifications Spec
 
-### Parte III: Técnicas Avançadas
+### Part III: Advanced Techniques
 
-11. Comandos Slash Customizados
-2. Subagentes Especializados
-3. Conclusão
+1. Custom Slash Commands
+2. Specialized Sub-agents
+3. Conclusion
 
-### Apêndices
+### Appendices
 
-- Templates Prontos (requirements.md, design.md, tasks.md)
-- Glossário
-- Índice de Specs
+- Ready-to-Use Templates (requirements.md, design.md, tasks.md)
+- Glossary
+- Spec Index
 
-## 🛠️ Stack do Projeto Exemplo
+## 🛠️ Example Project Stack
 
-O ebook usa **TaskFlow Pro** como projeto exemplo — um sistema de gerenciamento de tarefas colaborativo:
+The ebook uses **TaskFlow Pro** as an example project — a collaborative task management system:
 
 ```
 Turborepo + Next.js 14 + Fastify + Prisma + shadcn/ui
 Socket.io (real-time) + BullMQ (queues) + Redis
 ```
 
-**Features cobertas:**
+**Features covered:**
 
-- ✅ Autenticação (email/senha + magic links)
-- ✅ Workspaces colaborativos com roles
-- ✅ Tarefas com subtasks, tags, due dates
-- ✅ Automações (quando X acontece, faça Y)
-- ✅ Notificações em tempo real
+- ✅ Authentication (email/password + magic links)
+- ✅ Collaborative workspaces with roles
+- ✅ Tasks with subtasks, tags, due dates
+- ✅ Automations (when X happens, do Y)
+- ✅ Real-time notifications
 
-## 🚀 Como Usar
+## 🚀 How to Use
 
-### Leitura Online
+### Online Reading
 
-Abra o arquivo [`EBOOK.md`](./EBOOK.md) diretamente no GitHub.
+Open the [`BOOK.en.md`](./BOOK.en.md) or [`BOOK.pt-BR.md`](./BOOK.pt-BR.md) file directly on GitHub.
 
 ### Download
 
@@ -72,37 +72,83 @@ Abra o arquivo [`EBOOK.md`](./EBOOK.md) diretamente no GitHub.
 git clone https://github.com/SEU_USER/spec-driven-ebook.git
 ```
 
-### Aplicação Prática
+### Practical Application
 
-1. Copie os templates do Apêndice A
-2. Adapte para seu projeto
-3. Siga o workflow: Requirements → Design → Tasks → Code
+1. Copy the templates from Appendix A
+2. Adapt to your project
+3. Follow the workflow: Requirements → Design → Tasks → Code
 
-## 💡 Por Que Este Ebook?
+## Building the book (PDF + EPUB)
 
-> "Agentes de IA são pedreiros extraordinariamente rápidos. Mas sem a planta da casa, constroem o banheiro no lugar da cozinha."
+Print-ready PDF and reflowable EPUB are generated from the Markdown source by the **base25-book-kit** engine — a git submodule mounted at `kit/`. The PDF is sized 6×9" for Kindle Print; the EPUB is EPUB 3 with a 1600×2560 cover, ready for KDP digital upload. Every book-specific string (title, cover, copyright) lives in `book.config.json`.
 
-Desenvolvedores experientes sabem codar. O desafio com IA é **comunicar o que codar**. Este ebook ensina exatamente isso.
+### Sources
 
-## 📊 Para Quem É
+- `BOOK.pt-BR.md` — Brazilian Portuguese (primary; targets KDP-BR and base25.so)
+- `BOOK.en.md` — English
 
-- Desenvolvedores usando Claude Code, Cursor, Copilot
-- Times que querem estruturar trabalho com IA
-- Qualquer pessoa cansada de refazer código porque "a IA não entendeu"
+Either file is optional; the build runs for whichever exists.
 
-## 🤝 Contribuindo
+### Local build
 
-Encontrou erro? Quer sugerir melhoria?
+```bash
+git submodule update --init        # fetches the kit engine
+mise install                       # installs Node + Typst
+bash kit/scripts/build.sh          # PDF + EPUB (default; installs kit npm deps on first run)
+bash kit/scripts/build.sh --pdf    # PDF only
+bash kit/scripts/build.sh --epub   # EPUB only
+```
 
-1. Abra uma Issue
-2. Ou envie um PR
+Output:
 
-## 📄 Licença
+- `dist/book-{pt-br,en}.pdf` — print-ready interior
+- `dist/book-{pt-br,en}.epub` — reflowable ebook (KDP upload)
+- `dist/cover-{pt-br,en}.png` — 1600×2560 cover (KDP separate upload)
 
-MIT — Use, adapte e compartilhe livremente.
+Force a specific source with `SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh`.
 
----
+### Pipeline
 
-<p align="center">
-  <strong>Feito com 🧠 e ☕ para a comunidade dev</strong>
-</p>
+```
+BOOK.{pt-BR,en}.md + book.config.json
+  ├─ kit/scripts/render-mermaid.mjs   → typst/assets/diagrams/*.svg  (one-shot via mmdc)
+  │
+  ├─ kit/scripts/md-to-typst.mjs      → typst/chapters/*.typ + chapters.typ
+  │  typst compile kit/typst/book.typ → dist/book-*.pdf
+  │
+  ├─ typst compile kit/typst/cover.typ → dist/cover-*.png   (1600×2560 @ 250ppi)
+  │
+  └─ kit/scripts/md-to-epub.mjs       → dist/book-*.epub
+     (marked.parse() per chapter, html-to-epub assembles)
+```
+
+The engine (scripts, Typst template, cover renderer, fonts, EPUB stylesheet) is shared across the Base25 books via the submodule — to change typography or pipeline behaviour, edit in the `base25-book-kit` repo and bump the submodule pointer here (`git submodule update --remote kit`).
+
+### Publishing
+
+- **KDP (Kindle)**: upload the EPUB and the cover PNG. KDP converts the EPUB to KFX internally; the cover stays as the marketplace thumbnail.
+- **KDP Print** (paperback): upload the PDF (6×9") and the cover PNG. KDP will ask for a full wraparound cover for print — the front cover from `dist/cover-*.png` is reusable, but spine + back need a separate file.
+- **base25.so / direct**: ship the PDF + EPUB as a bundle. Skip KDP Select (its 90-day digital exclusivity prevents selling the EPUB anywhere else).
+
+### CI
+
+`.github/workflows/build.yml` builds PT and EN in parallel on every push and PR, and uploads PDF + EPUB + cover as artifacts. Pushing a `v*` tag attaches all three to a GitHub Release.
+
+## 💡 Why This Ebook?
+
+> "AI agents are extraordinarily fast masons. But without the house blueprint, they build the bathroom where the kitchen should be."
+
+Experienced developers know how to code. The challenge with AI is **communicating what to code**. This ebook teaches exactly that.
+
+## 📊 Who It's For
+
+- Developers using Claude Code, Cursor, Copilot
+- Teams that want to structure their work with AI
+- Anyone tired of redoing code because "the AI didn't understand"
+
+## 🤝 Contributing
+
+Found an error? Want to suggest an improvement?
+
+1. Open an Issue
+2. Or submit a PR

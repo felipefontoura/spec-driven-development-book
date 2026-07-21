@@ -1,0 +1,56 @@
+{
+  "$comment": "Single source of truth for every book-specific string + the portability seam. The engine (kit/) reads only from here. kit.dir is the submodule path relative to this file's directory.",
+  "kit": { "dir": "kit" },
+  "author": "Felipe Fontoura",
+  "publisher": "Felipe Fontoura",
+  "languages": {
+    "pt": {
+      "langTag": "pt-BR",
+      "title": "Spec-Driven Development",
+      "subtitle": "O Guia Definitivo para Construir Produtos com IA",
+      "eyebrow": "Um método de desenvolvimento AI-native",
+      "tocName": "Sumário",
+      "preambleTitle": "Introdução",
+      "partsLabel": "Parte",
+      "appendixLabel": "Apêndice",
+      "description": "Uma metodologia completa para construir produtos com agentes de IA — do requisito à implementação, com especificações que dirigem o código. Construindo o TaskFlow Pro do zero.",
+      "cover": {
+        "title": "Spec-Driven Development",
+        "subtitle": "O Guia Definitivo para Construir Produtos com IA",
+        "label": "UM MÉTODO DE DESENVOLVIMENTO AI-NATIVE"
+      },
+      "copyright": [
+        "Copyright © 2026 Felipe Fontoura. Todos os direitos reservados.",
+        "Nenhuma parte deste livro pode ser reproduzida ou transmitida por qualquer meio, eletrônico ou mecânico, sem permissão prévia por escrito do autor, exceto pelo uso de breves citações em resenhas.",
+        "Primeira edição: 2026. Publicação independente.",
+        "Os exemplos de código, especificações e o nome de produto TaskFlow Pro são fictícios, criados para fins educacionais. Qualquer semelhança com produtos reais é coincidência.",
+        "Marcas mencionadas (Claude, Claude Code, Cursor, GitHub Copilot, Next.js, Fastify, Prisma e outras) são propriedade de seus respectivos donos.",
+        "Contato: felipefontoura.com · base25.so"
+      ]
+    },
+    "en": {
+      "langTag": "en-US",
+      "title": "Spec-Driven Development",
+      "subtitle": "The Definitive Guide to Building Products with AI",
+      "eyebrow": "An AI-native development method",
+      "tocName": "Contents",
+      "preambleTitle": "Introduction",
+      "partsLabel": "Part",
+      "appendixLabel": "Appendix",
+      "description": "A complete methodology for building products with AI agents — from requirements to implementation, with specifications driving the code. Building TaskFlow Pro from scratch.",
+      "cover": {
+        "title": "Spec-Driven Development",
+        "subtitle": "The Definitive Guide to Building Products with AI",
+        "label": "AN AI-NATIVE DEVELOPMENT METHOD"
+      },
+      "copyright": [
+        "Copyright © 2026 Felipe Fontoura. All rights reserved.",
+        "No part of this book may be reproduced or transmitted in any form or by any means, electronic or mechanical, without prior written permission from the author, except for the use of brief quotations in book reviews.",
+        "First edition: 2026. Independently published.",
+        "Code examples, specifications, and the product name TaskFlow Pro are fictitious, created for educational purposes. Any resemblance to real products is coincidental.",
+        "Trademarks mentioned (Claude, Claude Code, Cursor, GitHub Copilot, Next.js, Fastify, Prisma, and others) are property of their respective owners.",
+        "Contact: felipefontoura.com · base25.so"
+      ]
+    }
+  }
+}
