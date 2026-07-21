@@ -1,14 +1,16 @@
 name: Build book (PDF + EPUB)
 
+# Validation only. This workflow proves the book compiles in both languages;
+# it never publishes the finished PDF/EPUB (no artifacts, no release attachment),
+# because the book is sold on Kindle/KDP and must not be freely downloadable.
+# Build the files locally for distribution: `bash kit/scripts/build.sh --all`.
+
 on:
   push:
     branches: [main]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
-
-permissions:
-  contents: write # needed for the release upload on tags
 
 jobs:
   build:
@@ -52,29 +54,16 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: "false"
 
-      - name: Build PDF + EPUB + cover
+      - name: Build PDF + EPUB + cover (validation only — not published)
         if: steps.probe.outputs.present == 'true'
         env:
           SOURCE_MD: ${{ matrix.source }}
         run: bash kit/scripts/build.sh --all
 
-      - name: Upload artifacts
+      - name: Confirm the three outputs exist
         if: steps.probe.outputs.present == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: book-${{ matrix.lang }}
-          path: |
-            dist/book-${{ matrix.lang }}.pdf
-            dist/book-${{ matrix.lang }}.epub
-            dist/cover-${{ matrix.lang }}.png
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Attach to Release (tag pushes only)
-        if: steps.probe.outputs.present == 'true' && startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/book-${{ matrix.lang }}.pdf
-            dist/book-${{ matrix.lang }}.epub
-            dist/cover-${{ matrix.lang }}.png
+        run: |
+          test -f "dist/book-${{ matrix.lang }}.pdf"
+          test -f "dist/book-${{ matrix.lang }}.epub"
+          test -f "dist/cover-${{ matrix.lang }}.png"
+          echo "OK ${{ matrix.lang }}: PDF + EPUB + cover built (kept private, not uploaded)"

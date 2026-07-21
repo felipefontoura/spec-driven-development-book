@@ -161,10 +161,11 @@ Full details in [`sdd-kit/README.md`](sdd-kit/README.md) and Appendix B of the b
 
 ## Getting started
 
-Just want to read? Open [`BOOK.en.md`](BOOK.en.md) or
+Just want to read the source? Open [`BOOK.en.md`](BOOK.en.md) or
 [`BOOK.pt-BR.md`](BOOK.pt-BR.md) directly on GitHub — Mermaid diagrams and tables
-render natively. Prefer PDF or EPUB? Build them locally (below), or grab them from
-the [Releases](https://github.com/felipefontoura/spec-driven-development-book/releases).
+render natively. The typeset **PDF and EPUB are sold on Amazon Kindle / KDP**;
+this repository holds the Markdown source, not the finished ebook. Want your own
+copy from source? Build it locally (below).
 
 Want to apply the method? Copy the [SDD Kit](#the-sdd-kit) into your project and
 run `/sdd-init`.
@@ -211,8 +212,10 @@ Outputs land in `dist/` (gitignored):
 - `dist/book-{pt-br,en}.epub` — reflowable ebook (KDP upload)
 - `dist/cover-{pt-br,en}.png` — 1600×2560 cover
 
-CI (`.github/workflows/build.yml`) builds both languages on every push and PR and
-uploads the artifacts; pushing a `v*` tag attaches PDF + EPUB + cover to a Release.
+CI (`.github/workflows/build.yml`) builds both languages on every push and PR as a
+**validation smoke test** — it proves the book compiles, but it does **not** upload
+or publish the finished PDF/EPUB (the ebook is sold on KDP and must not be freely
+downloadable). Generate the files locally for distribution.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -229,7 +232,7 @@ spec-driven-development-book/
 │   └── templates/         ← copy-paste requirements/design/tasks templates
 ├── kit/                   ← GIT SUBMODULE — the build engine (base25-book-kit)
 ├── typst/ · dist/         ← GENERATED (gitignored) — never edit by hand
-└── .github/workflows/     ← CI: builds both languages, attaches to releases
+└── .github/workflows/     ← CI: build smoke test (validation only, no publishing)
 ```
 
 Markdown is the single source of truth. The `kit/` engine (Typst template, cover
