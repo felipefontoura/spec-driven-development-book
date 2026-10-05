@@ -1,16 +1,18 @@
 name: Build book (PDF + EPUB)
 
-# Pull requests: validation only. The build is proven but nothing leaves CI.
-# Push to main / tags / manual runs: the finished PDF + EPUB + cover are also
-# uploaded to a PRIVATE S3-compatible bucket (Backblaze B2 or AWS S3) so they
-# can be distributed privately (presigned URLs). The .md repo stays public;
-# the binaries never become Actions artifacts or release assets.
-# Upload is skipped automatically when the BOOK_S3_* secrets are not set.
+# Every run builds both editions, so a broken book is caught on any branch or PR
+# and nothing leaves CI by default (no Actions artifacts, no release assets: the
+# book is sold, and the .md repo stays public).
+# Publishing is deliberate: ONLY a run on the `stable` branch uploads the
+# finished PDF + EPUB + cover to the PRIVATE S3-compatible bucket (Cloudflare R2)
+# that the site's /dl serves. PRs, main, tags and manual runs from any other
+# branch only validate. To release: merge into `stable`.
+# Upload is also skipped when the BOOK_S3_* secrets are not set.
 # Build locally anytime: `bash kit/scripts/build.sh --all`.
 
 on:
   push:
-    branches: [main]
+    branches: [main, stable]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
@@ -71,16 +73,19 @@ jobs:
           test -f "dist/cover-${{ matrix.lang }}.png"
           echo "OK ${{ matrix.lang }}: PDF + EPUB + cover built (kept private, not uploaded)"
 
-      # Private bucket upload. Never runs on PRs (forks get no secrets anyway).
-      # Layout: <prefix>/<ref>/<file> (immutable per tag/branch+sha) and
-      #         <prefix>/latest/<file> (overwritten on every main build).
+      # Private bucket upload: only on the `stable` branch (a push to it, or a
+      # manual run started from it). Layout: <prefix>/stable-<sha>/<file>
+      # (immutable copy of each release) and <prefix>/latest/<file> (what the
+      # site's /dl serves, overwritten on every release).
       # Secrets: BOOK_S3_ENDPOINT (B2: https://s3.<region>.backblazeb2.com;
-      # leave empty for AWS), BOOK_S3_REGION, BOOK_S3_BUCKET,
+      # leave empty for AWS; R2: https://<account>.r2.cloudflarestorage.com,
+      # region "auto"), BOOK_S3_REGION, BOOK_S3_BUCKET,
       # BOOK_S3_ACCESS_KEY_ID, BOOK_S3_SECRET_ACCESS_KEY.
       - name: Upload to private bucket
         if: >-
           steps.probe.outputs.present == 'true' &&
-          github.event_name != 'pull_request'
+          github.event_name != 'pull_request' &&
+          github.ref == 'refs/heads/stable'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BOOK_S3_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BOOK_S3_SECRET_ACCESS_KEY }}
@@ -96,14 +101,16 @@ jobs:
             echo "::notice::BOOK_S3_* secrets not set — skipping private upload."
             exit 0
           fi
-          ref="${GITHUB_REF_NAME//\//-}"
-          [[ "$GITHUB_REF_TYPE" == "tag" ]] || ref="${ref}-${GITHUB_SHA::7}"
+          # Second lock, in case the `if` above is ever loosened by mistake.
+          if [[ "$GITHUB_REF" != "refs/heads/stable" ]]; then
+            echo "::error::Refusing to publish from $GITHUB_REF: only stable publishes."
+            exit 1
+          fi
+          ref="stable-${GITHUB_SHA::7}"
           args=()
           [[ -n "$ENDPOINT" ]] && args+=(--endpoint-url "$ENDPOINT")
           for f in "book-$LANG_ID.pdf" "book-$LANG_ID.epub" "cover-$LANG_ID.png"; do
             aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/$ref/$f" "${args[@]}" --only-show-errors
-            if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-              aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/latest/$f" "${args[@]}" --only-show-errors
-            fi
+            aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/latest/$f" "${args[@]}" --only-show-errors
           done
-          echo "Uploaded $LANG_ID to private bucket under $PREFIX/$ref/"
+          echo "Published $LANG_ID to the private bucket: $PREFIX/$ref/ and $PREFIX/latest/"
