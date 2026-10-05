@@ -74,9 +74,9 @@ jobs:
           echo "OK ${{ matrix.lang }}: PDF + EPUB + cover built (kept private, not uploaded)"
 
       # Private bucket upload: only on the `stable` branch (a push to it, or a
-      # manual run started from it). Layout: <prefix>/stable-<sha>/<file>
-      # (immutable copy of each release) and <prefix>/latest/<file> (what the
-      # site's /dl serves, overwritten on every release).
+      # manual run started from it). One place only: <prefix>/latest/<file>,
+      # overwritten on every release (what the site's /dl serves). No per-commit
+      # copies: the history lives in git, and the bucket stays small.
       # Secrets: BOOK_S3_ENDPOINT (B2: https://s3.<region>.backblazeb2.com;
       # leave empty for AWS; R2: https://<account>.r2.cloudflarestorage.com,
       # region "auto"), BOOK_S3_REGION, BOOK_S3_BUCKET,
@@ -106,11 +106,9 @@ jobs:
             echo "::error::Refusing to publish from $GITHUB_REF: only stable publishes."
             exit 1
           fi
-          ref="stable-${GITHUB_SHA::7}"
           args=()
           [[ -n "$ENDPOINT" ]] && args+=(--endpoint-url "$ENDPOINT")
           for f in "book-$LANG_ID.pdf" "book-$LANG_ID.epub" "cover-$LANG_ID.png"; do
-            aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/$ref/$f" "${args[@]}" --only-show-errors
             aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/latest/$f" "${args[@]}" --only-show-errors
           done
-          echo "Published $LANG_ID to the private bucket: $PREFIX/$ref/ and $PREFIX/latest/"
+          echo "Published $LANG_ID to the private bucket: $PREFIX/latest/"
