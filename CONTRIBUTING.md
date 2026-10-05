@@ -43,8 +43,10 @@ rewrites the point in their own words).
 
 ## Credit
 
-Substantial contributions (translations, new sections, in-depth reviews) are
-credited by name in the book's acknowledgments, unless you prefer not to be.
+Every merged PR adds you to [CONTRIBUTORS.md](CONTRIBUTORS.md)
+automatically, with the kind of contribution. Substantial ones (translations,
+new sections, in-depth reviews) are also credited by name in the book's
+acknowledgments, unless you prefer not to be.
 
 ## Conduct
 

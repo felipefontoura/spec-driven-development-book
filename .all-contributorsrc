@@ -1,0 +1,13 @@
+{
+  "projectName": "spec-driven-development-book",
+  "projectOwner": "felipefontoura",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["CONTRIBUTORS.md"],
+  "imageSize": 80,
+  "commit": false,
+  "contributorsPerLine": 6,
+  "contributorsSortAlphabetically": true,
+  "skipCi": true,
+  "contributors": []
+}

@@ -1,0 +1,38 @@
+# Friendly, non-blocking reminder: if a contributor didn't tick the license
+# checkbox of the PR template, leave one comment explaining it. Never fails.
+name: PR license reminder
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  license-ack:
+    if: >-
+      github.event.pull_request.user.type != 'Bot' &&
+      github.event.pull_request.user.login != github.repository_owner
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.number }}
+      REPO: ${{ github.repository }}
+      BODY: ${{ github.event.pull_request.body }}
+    steps:
+      - name: Remind about the license checkbox
+        run: |
+          marker='<!-- license-ack -->'
+          if printf '%s' "$BODY" | grep -Eqi '^\s*-\s*\[x\].*wrote this contribution myself'; then
+            exit 0
+          fi
+          if gh api --paginate "repos/$REPO/issues/$PR/comments" --jq '.[].body' | grep -qF "$marker"; then
+            exit 0
+          fi
+          gh pr comment "$PR" --repo "$REPO" --body "$marker
+          Thanks for the PR! One small thing: the last checkbox in the description
+          confirms the contribution is yours and that it is shared under the book's
+          license, so the author can keep publishing it (see
+          [CONTRIBUTING.md](https://github.com/$REPO/blob/main/CONTRIBUTING.md#licensing-of-contributions)).
+          Please tick it, or just reply here with \"I agree\". This does not block the merge."
