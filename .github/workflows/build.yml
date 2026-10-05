@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout (with the public book-kit engine submodule)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -49,7 +49,7 @@ jobs:
       # Installs Node + Typst pinned by mise.toml — same toolchain as local dev.
       - name: Setup toolchain (mise → Node + Typst)
         if: steps.probe.outputs.present == 'true'
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v5
 
       # npm ci in the engine submodule; puppeteer downloads Chromium for Mermaid.
       - name: Install engine dependencies
