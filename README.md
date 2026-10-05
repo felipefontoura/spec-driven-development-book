@@ -12,6 +12,7 @@ Written in Markdown, shipped as a print-ready PDF and a reflowable EPUB, in
 English and Brazilian Portuguese. Comes with a ready-to-use SDD kit for Claude Code.
 
 [![Build](https://github.com/felipefontoura/spec-driven-development-book/actions/workflows/build.yml/badge.svg)](https://github.com/felipefontoura/spec-driven-development-book/actions/workflows/build.yml)
+[![Book: CC BY-NC-SA 4.0](https://img.shields.io/badge/Book-CC_BY--NC--SA_4.0-B3A896.svg)](LICENSE)
 [![Kit: MIT](https://img.shields.io/badge/SDD_Kit-MIT-B3A896.svg)](sdd-kit/LICENSE)
 [![Typst](https://img.shields.io/badge/Typst-powered-AD7A14.svg)](https://typst.app)
 [![EN](https://img.shields.io/badge/lang-EN-5D564B.svg)](BOOK.en.md)
@@ -260,17 +261,10 @@ in the [book-kit](https://github.com/felipefontoura/book-kit) repo.
 ## Contributing
 
 Found a typo, a broken example, or a technical inaccuracy? Contributions are
-welcome.
-
-1. Fork the repository and create a branch.
-2. Edit the Markdown source (`BOOK.pt-BR.md` and/or `BOOK.en.md`). **Never**
-   hand-edit anything under `typst/` or `dist/` — those are generated.
-3. Follow the conventions in [CLAUDE.md](CLAUDE.md): headings hierarchy, Mermaid
-   with the kit's semantic node classes (no emojis, no inline `style`), and
-   consistency with the TaskFlow Pro example.
-4. Build both languages (`bash kit/scripts/build.sh --all` and the same with
-   `SOURCE_MD=BOOK.en.md`) and confirm they compile.
-5. Open a PR with a clear description of what changed and why.
+welcome. The short version: fork, edit `BOOK.pt-BR.md` and/or `BOOK.en.md`
+(never `typst/` or `dist/`), build both languages, and open a PR using the
+template. Full guide, including how contributions are licensed:
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -282,9 +276,17 @@ This repository mixes two kinds of material:
   released under the **MIT License**: see [`sdd-kit/LICENSE`](sdd-kit/LICENSE).
   Use it, fork it, ship it. It is the Claude Code port of the MIT-licensed
   [pi-sdd-kit](https://github.com/felipefontoura/pi-sdd-kit).
-- **The book content** (`BOOK.*.md`, covers, and generated PDF/EPUB) is
-  **© 2026 Felipe Fontoura**. TaskFlow Pro and its specs are provided as
-  educational examples you are free to adapt in your own projects.
+- **The book text** (`BOOK.*.md` and its diagrams) is released under
+  **[CC BY-NC-SA 4.0](LICENSE)**, © 2026 Felipe Fontoura. You may share and
+  adapt it (translations included) with attribution, for non-commercial
+  purposes, under the same license. **Selling it, or any copy or derivative, is
+  reserved to the author.** TaskFlow Pro and its specs are educational examples
+  you are free to adapt in your own projects under the same terms.
+- **Covers, title, and branding**, and the generated PDF/EPUB editions, are
+  **© 2026 Felipe Fontoura** and are not covered by the license above.
+
+Contributions are accepted under these terms: see
+[CONTRIBUTING.md](CONTRIBUTING.md#licensing-of-contributions).
 
 The build engine in `kit/` is a separate repository under its own
 [MIT license](https://github.com/felipefontoura/book-kit/blob/main/LICENSE).

@@ -20,8 +20,9 @@
         "label": "DO MÉTODO AO CÓDIGO EM PRODUÇÃO"
       },
       "copyright": [
-        "Copyright © 2026 Felipe Fontoura. Todos os direitos reservados.",
-        "Nenhuma parte deste livro pode ser reproduzida ou transmitida por qualquer meio, eletrônico ou mecânico, sem permissão prévia por escrito do autor, exceto pelo uso de breves citações em resenhas.",
+        "Copyright © 2026 Felipe Fontoura.",
+        "O texto deste livro é licenciado sob Creative Commons Atribuição-NãoComercial-CompartilhaIgual 4.0 Internacional (CC BY-NC-SA 4.0). Você pode compartilhar e adaptar o texto, com atribuição, para fins não comerciais e sob a mesma licença. A venda deste livro, ou de cópias e obras derivadas, é reservada ao autor. Capa, título e identidade visual não são cobertos por essa licença. Texto completo e código-fonte:",
+        "github.com/felipefontoura/spec-driven-development-book",
         "Primeira edição: 2026. Publicação independente.",
         "Os exemplos de código, especificações e o nome de produto TaskFlow Pro são fictícios, criados para fins educacionais. Qualquer semelhança com produtos reais é coincidência.",
         "Marcas mencionadas (Claude, Claude Code, Cursor, GitHub Copilot, Next.js, Fastify, Prisma e outras) são propriedade de seus respectivos donos.",
@@ -44,8 +45,9 @@
         "label": "FROM THE METHOD TO PRODUCTION CODE"
       },
       "copyright": [
-        "Copyright © 2026 Felipe Fontoura. All rights reserved.",
-        "No part of this book may be reproduced or transmitted in any form or by any means, electronic or mechanical, without prior written permission from the author, except for the use of brief quotations in book reviews.",
+        "Copyright © 2026 Felipe Fontoura.",
+        "The text of this book is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0). You may share and adapt the text, with attribution, for non-commercial purposes and under the same license. Selling this book, or any copy or derivative of it, is reserved to the author. The cover, title, and visual identity are not covered by this license. Full text and source:",
+        "github.com/felipefontoura/spec-driven-development-book",
         "First edition: 2026. Independently published.",
         "Code examples, specifications, and the product name TaskFlow Pro are fictitious, created for educational purposes. Any resemblance to real products is coincidental.",
         "Trademarks mentioned (Claude, Claude Code, Cursor, GitHub Copilot, Next.js, Fastify, Prisma, and others) are property of their respective owners.",
