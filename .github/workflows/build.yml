@@ -1,9 +1,12 @@
 name: Build book (PDF + EPUB)
 
-# Validation only. This workflow proves the book compiles in both languages;
-# it never publishes the finished PDF/EPUB (no artifacts, no release attachment),
-# because the book is sold on Kindle/KDP and must not be freely downloadable.
-# Build the files locally for distribution: `bash kit/scripts/build.sh --all`.
+# Pull requests: validation only. The build is proven but nothing leaves CI.
+# Push to main / tags / manual runs: the finished PDF + EPUB + cover are also
+# uploaded to a PRIVATE S3-compatible bucket (Backblaze B2 or AWS S3) so they
+# can be distributed privately (presigned URLs). The .md repo stays public;
+# the binaries never become Actions artifacts or release assets.
+# Upload is skipped automatically when the BOOK_S3_* secrets are not set.
+# Build locally anytime: `bash kit/scripts/build.sh --all`.
 
 on:
   push:
@@ -67,3 +70,40 @@ jobs:
           test -f "dist/book-${{ matrix.lang }}.epub"
           test -f "dist/cover-${{ matrix.lang }}.png"
           echo "OK ${{ matrix.lang }}: PDF + EPUB + cover built (kept private, not uploaded)"
+
+      # Private bucket upload. Never runs on PRs (forks get no secrets anyway).
+      # Layout: <prefix>/<ref>/<file> (immutable per tag/branch+sha) and
+      #         <prefix>/latest/<file> (overwritten on every main build).
+      # Secrets: BOOK_S3_ENDPOINT (B2: https://s3.<region>.backblazeb2.com;
+      # leave empty for AWS), BOOK_S3_REGION, BOOK_S3_BUCKET,
+      # BOOK_S3_ACCESS_KEY_ID, BOOK_S3_SECRET_ACCESS_KEY.
+      - name: Upload to private bucket
+        if: >-
+          steps.probe.outputs.present == 'true' &&
+          github.event_name != 'pull_request'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BOOK_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BOOK_S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.BOOK_S3_REGION }}
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+          BUCKET: ${{ secrets.BOOK_S3_BUCKET }}
+          ENDPOINT: ${{ secrets.BOOK_S3_ENDPOINT }}
+          PREFIX: sdd-book
+          LANG_ID: ${{ matrix.lang }}
+        run: |
+          if [[ -z "$BUCKET" || -z "$AWS_ACCESS_KEY_ID" ]]; then
+            echo "::notice::BOOK_S3_* secrets not set — skipping private upload."
+            exit 0
+          fi
+          ref="${GITHUB_REF_NAME//\//-}"
+          [[ "$GITHUB_REF_TYPE" == "tag" ]] || ref="${ref}-${GITHUB_SHA::7}"
+          args=()
+          [[ -n "$ENDPOINT" ]] && args+=(--endpoint-url "$ENDPOINT")
+          for f in "book-$LANG_ID.pdf" "book-$LANG_ID.epub" "cover-$LANG_ID.png"; do
+            aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/$ref/$f" "${args[@]}" --only-show-errors
+            if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+              aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/latest/$f" "${args[@]}" --only-show-errors
+            fi
+          done
+          echo "Uploaded $LANG_ID to private bucket under $PREFIX/$ref/"
