@@ -353,7 +353,7 @@ config:
     rankSpacing: 28
 ---
 flowchart TB
-    ROOT[Projeto] --> CM[CLAUDE.md / AGENTS.md]
+    ROOT[Projeto] --> CM[AGENTS.md]
     ROOT --> AI[.ai/]
     AI --> ST[steering/]
     AI --> SP[sdd/specs/001-feature/]
@@ -392,9 +392,11 @@ Dois princípios sustentam essa árvore:
 1. **Contexto global é separado de contexto por feature.** O que vale para o projeto inteiro (produto, stack, convenções) mora em `steering/`. O que vale para uma feature mora na pasta dela. Misturar os dois é como o contexto apodrece.
 2. **A pasta `.ai/` é agnóstica de ferramenta.** Claude Code, Cursor, Copilot, Pi — qualquer agente lê markdown. A estrutura sobrevive à troca de ferramenta, e num time cada pessoa pode usar o agente que preferir contra o mesmo contrato.
 
-### 3.2 A camada de entrada: CLAUDE.md / AGENTS.md
+### 3.2 A camada de entrada: AGENTS.md
 
-Todo agente tem um arquivo que carrega no início de cada conversa. Existem dois nomes em jogo. O `AGENTS.md` virou o padrão aberto cross-tool — em dezembro de 2025 a Linux Foundation formou a Agentic AI Foundation (OpenAI, Anthropic e Block como fundadores), e mais de 30 ferramentas o leem nativamente: Codex, Cursor, Copilot, Gemini CLI, Zed, Windsurf, entre outras. O Claude Code é a exceção que importa: ele lê `CLAUDE.md`, **não** o `AGENTS.md` nativamente (meados de 2026). A ponte é uma linha — um `@AGENTS.md` de import dentro do `CLAUDE.md` — e a regra prática: se o seu time usa mais de uma ferramenta, lidere com `AGENTS.md` e importe-o no `CLAUDE.md`; o `CLAUDE.md` continua preferível para os recursos nativos do Claude Code (memória em três camadas, hooks, skills). Seja qual for o nome, esse arquivo é a camada 1 do sistema, e o erro mais comum é tratá-lo como depósito.
+Todo agente tem um arquivo que carrega no início de cada conversa. Este livro usa como padrão o **`AGENTS.md`** — o padrão aberto cross-tool — pra que o mesmo arquivo de entrada funcione sem alteração em Claude Code, Cursor, Copilot, Gemini CLI, Zed, Windsurf, Pi, OpenCode e no que vier a seguir. Em dezembro de 2025 a Linux Foundation formou a Agentic AI Foundation (OpenAI, Anthropic e Block como fundadores) em torno exatamente desse arquivo, e hoje mais de 30 ferramentas o leem nativamente.
+
+O Claude Code merece uma nota à parte, porque o suporte chegou depois: desde a v2.1.277 (setembro de 2026) ele lê `AGENTS.md` nativamente, sem precisar do import `@AGENTS.md`. A única pegadinha é a precedência — se existir um `CLAUDE.md` em qualquer pasta igual ou acima do diretório de trabalho, o Claude Code carrega esse em vez do `AGENTS.md`, que nunca chega a ser lido. O `CLAUDE.md` também continua sendo o que destrava os recursos nativos do Claude Code: hooks, regras por caminho, a memória em três camadas que este livro constrói no Capítulo 11. A regra prática continua simples: use `AGENTS.md` como padrão, como este livro faz; adicione um `CLAUDE.md` só se o seu time usa exclusivamente Claude Code e quer esses recursos nativos. Seja qual for o nome, esse arquivo é a camada 1 do sistema, e o erro mais comum é tratá-lo como depósito.
 
 A disciplina da Anthropic para esse arquivo é a melhor que existe: *para cada linha, pergunte — remover isso faria o agente errar? Se não, corte.* Arquivos de entrada inchados fazem o agente ignorar as instruções que importam.
 
@@ -2925,7 +2927,7 @@ E o contraponto, também deles: *"se você consegue descrever o diff em uma fras
 
 ### 11.3 CLAUDE.md é a camada um, não o sistema inteiro
 
-O Claude Code lê o `CLAUDE.md` no início de toda conversa. O modo de falha mais comum: encher o arquivo com convenções, preferências, histórico e normas do time até ele ter 400 linhas. O agente lê o primeiro terço e ignora o resto — e as regras que mais importam são as que se perdem. Nas palavras da própria Anthropic: *"se o Claude continua fazendo algo que você não quer apesar de existir uma regra contra, o arquivo provavelmente está longo demais e a regra está se perdendo."*
+O Claude Code lê o `CLAUDE.md` no início de toda conversa (ou o `AGENTS.md`, pelo padrão da seção 3.2, quando não há `CLAUDE.md` — as regras abaixo valem pros dois). O modo de falha mais comum: encher o arquivo com convenções, preferências, histórico e normas do time até ele ter 400 linhas. O agente lê o primeiro terço e ignora o resto — e as regras que mais importam são as que se perdem. Nas palavras da própria Anthropic: *"se o Claude continua fazendo algo que você não quer apesar de existir uma regra contra, o arquivo provavelmente está longo demais e a regra está se perdendo."*
 
 A correção não é organizar melhor dentro do `CLAUDE.md`. É tirar a maior parte do conteúdo de lá, para um sistema de **três camadas**, cada uma com um trabalho e um tempo de vida:
 
@@ -3706,6 +3708,7 @@ As regras que o kit impõe são as do livro: número de feature vem do filesyste
 | **Contexto de três camadas** | Arquivo de entrada (roteia) + steering (lembra) + spec da feature (trabalha). |
 | **Outbox** | Padrão que garante que um evento/job é registrado na mesma transação da mudança que o originou. |
 | **Handoff** | Artefato de contrato entre etapas/pacotes de workflow (ex.: `sdd-brief.md`) — resume sem substituir as fontes. |
+| **AGENTS.md** | O padrão aberto cross-tool para arquivos de instrução de agente (Agentic AI Foundation, 2025) — o arquivo de entrada padrão deste livro. O Claude Code o lê nativamente desde a v2.1.277 (set/2026), recorrendo a ele só quando não há `CLAUDE.md` acima do diretório de trabalho. |
 | **Workspace** | No TaskFlow Pro: espaço isolado de colaboração; a fronteira de segurança do produto. |
 
 ---
