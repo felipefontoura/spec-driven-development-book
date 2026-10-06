@@ -353,7 +353,7 @@ config:
     rankSpacing: 28
 ---
 flowchart TB
-    ROOT[Project] --> CM[CLAUDE.md / AGENTS.md]
+    ROOT[Project] --> CM[AGENTS.md]
     ROOT --> AI[.ai/]
     AI --> ST[steering/]
     AI --> SP[sdd/specs/001-feature/]
@@ -392,9 +392,11 @@ Two principles hold this tree up:
 1. **Global context is separate from per-feature context.** What is true for the whole project (product, stack, conventions) lives in `steering/`. What is true for one feature lives in its folder. Mixing the two is how context rots.
 2. **The `.ai/` folder is tool-agnostic.** Claude Code, Cursor, Copilot, Pi — any agent reads markdown. The structure survives a tool change, and on a team each person can use their preferred agent against the same contract.
 
-### 3.2 The entry layer: CLAUDE.md / AGENTS.md
+### 3.2 The entry layer: AGENTS.md
 
-Every agent has a file it loads at the start of each conversation. Two names are in play. **`AGENTS.md`** became the cross-tool open standard — in December 2025 the Linux Foundation formed the Agentic AI Foundation (OpenAI, Anthropic, and Block as founders), and 30-plus tools read it natively: Codex, Cursor, Copilot, Gemini CLI, Zed, Windsurf, and more. Claude Code is the exception that matters: it reads `CLAUDE.md`, **not** `AGENTS.md` natively (as of mid-2026). The bridge is one line — an `@AGENTS.md` import inside `CLAUDE.md` — and the practical rule: if your team uses more than one tool, lead with `AGENTS.md` and import it into `CLAUDE.md`; `CLAUDE.md` stays preferable for Claude Code's native features (three-layer memory, hooks, skills). Whatever the name, this file is layer 1 of the system, and the most common mistake is treating it as a dumping ground.
+Every agent has a file it loads at the start of each conversation. This book defaults to **`AGENTS.md`** — the cross-tool open standard — so the same entry file works unmodified across Claude Code, Cursor, Copilot, Gemini CLI, Zed, Windsurf, Pi, OpenCode, and whatever ships next. In December 2025 the Linux Foundation formed the Agentic AI Foundation (OpenAI, Anthropic, and Block as founders) around exactly this file, and 30-plus tools read it natively today.
+
+Claude Code deserves a specific note, because its support shipped mid-stream: as of v2.1.277 (September 2026) it reads `AGENTS.md` natively, no `@AGENTS.md` import required. The one wrinkle is precedence — if a `CLAUDE.md` exists anywhere at or above the working directory, Claude Code loads that instead, and `AGENTS.md` is never read. `CLAUDE.md` is also still what unlocks Claude Code's own machinery: hooks, path-scoped rules, the three-layer memory this book builds in Chapter 11. The practical rule stays simple: default to `AGENTS.md`, as this book does; add a `CLAUDE.md` only if your team is Claude-Code-only and wants those native features. Whatever the name, this file is layer 1 of the system, and the most common mistake is treating it as a dumping ground.
 
 Anthropic's discipline for this file is the best there is: *for each line, ask — would removing this cause the agent to make mistakes? If not, cut it.* Bloated entry files make the agent ignore the instructions that matter.
 
@@ -2902,7 +2904,7 @@ And the counterpoint, also theirs: *"if you could describe the diff in one sente
 
 ### 11.3 CLAUDE.md is layer one, not the whole system
 
-Claude Code reads `CLAUDE.md` at the start of every conversation. The most common failure mode: loading the file with conventions, preferences, history, and team norms until it is 400 lines long. The agent reads the first third and ignores the rest — and the rules that matter most are the ones that get lost. In Anthropic's own words: *"if Claude keeps doing something you don't want despite having a rule against it, the file is probably too long and the rule is getting lost."*
+Claude Code reads `CLAUDE.md` at the start of every conversation (or `AGENTS.md`, per 3.2's default, when no `CLAUDE.md` is present — the rules below apply to either). The most common failure mode: loading the file with conventions, preferences, history, and team norms until it is 400 lines long. The agent reads the first third and ignores the rest — and the rules that matter most are the ones that get lost. In Anthropic's own words: *"if Claude keeps doing something you don't want despite having a rule against it, the file is probably too long and the rule is getting lost."*
 
 The fix is not better organization inside `CLAUDE.md`. It is moving most of the content out, into a **three-layer** system, each with one job and one lifespan:
 
@@ -3687,7 +3689,7 @@ Because the skills are plain `SKILL.md` files following the Agent Skills standar
 | **Three-layer context** | Entry file (routes) + steering (remembers) + feature spec (works). |
 | **Outbox** | A pattern that guarantees an event/job is recorded in the same transaction as the change that produced it. |
 | **Handoff** | A contract artifact between workflow stages/packages (e.g. `sdd-brief.md`) — summarizes without replacing the sources. |
-| **AGENTS.md** | The cross-tool open standard for agent instruction files (Agentic AI Foundation, 2025). Claude Code reads `CLAUDE.md` and imports `AGENTS.md` via `@AGENTS.md`. |
+| **AGENTS.md** | The cross-tool open standard for agent instruction files (Agentic AI Foundation, 2025) — this book's default entry file. Claude Code reads it natively since v2.1.277 (Sept 2026), falling back to it only when no `CLAUDE.md` is present above the working directory. |
 | **Workspace** | In TaskFlow Pro: an isolated collaboration space; the product's security boundary. |
 
 ---
