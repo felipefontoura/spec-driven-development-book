@@ -87,18 +87,20 @@ As horas de planejamento não são overhead. São as horas de regeneração que 
 
 ```mermaid
 flowchart TB
+    subgraph COM["Com especificação"]
+        direction TB
+        S1[Spec aprovada] --> G2[Gera da spec]
+        G2 --> A1[Ajustes pequenos]
+        A1 --> OK[Correto na primeira passada]
+    end
+
     subgraph SEM["Sem especificação"]
+        direction TB
         P1[Prompt] --> G1[Gera]
         G1 --> F1[Falta algo]
         F1 --> P2[Reprompt]
         P2 --> Q1[Quebra outra coisa]
         Q1 --> P1
-    end
-
-    subgraph COM["Com especificação"]
-        S1[Spec aprovada] --> G2[Gera da spec]
-        G2 --> A1[Ajustes pequenos]
-        A1 --> OK[Correto na primeira passada]
     end
 
     class P1,G1,F1,P2,Q1 muted;
@@ -187,20 +189,28 @@ A spec é o único desses artefatos que um agente executa — e o único que sob
 
 ### 2.3 O pipeline completo
 
-SDD organiza o trabalho num pipeline de fases, com um gate de aprovação humana entre cada uma:
-
-```text
-IDEA → PLAN → REQUIREMENTS → DESIGN → TASKS → IMPLEMENTATION → REVIEW
-```
+SDD organiza o trabalho em sete fases, agrupadas em três etapas. IDEA e PLAN dão forma ao trabalho antes de você se comprometer com ele. REQUIREMENTS, DESIGN e TASKS escrevem a spec, e cada uma termina num gate de aprovação humana. IMPLEMENTATION e REVIEW transformam a spec aprovada em código verificado.
 
 ```mermaid
-flowchart LR
-    I[IDEA] --> P[PLAN]
-    P --> R[REQUIREMENTS]
-    R -->|gate| D[DESIGN]
-    D -->|gate| T[TASKS]
-    T -->|gate| E[IMPLEMENTATION]
-    E --> V[REVIEW]
+flowchart TB
+    subgraph SHAPE["Dar forma ao trabalho (opcional)"]
+        direction LR
+        I[IDEA] --> P[PLAN]
+    end
+
+    subgraph SPEC["Escrever a spec"]
+        direction LR
+        R[REQUIREMENTS] -->|gate| D[DESIGN]
+        D -->|gate| T[TASKS]
+    end
+
+    subgraph CODE["Construir e verificar"]
+        direction LR
+        E[IMPLEMENTATION] --> V[REVIEW]
+    end
+
+    SHAPE --> SPEC
+    SPEC -->|gate| CODE
 
     class I,P muted;
     class R,D,T neutral;
@@ -316,46 +326,65 @@ Antes de escrever qualquer spec, você precisa de um lugar para ela morar. A est
 
 ```text
 .ai/
-  steering/                    # contexto reutilizável do projeto (memória durável)
-    product.md                 # visão do produto, usuários, o que ele NÃO é
-    tech-stack.md              # stack, versões e a razão de cada escolha
-    conventions.md             # padrões de código, nomes, formato de erro
-    principles.md              # regras arquiteturais inegociáveis
+  steering/               # contexto reutilizável
+    product.md            # visão, usuários, o que NÃO é
+    tech-stack.md         # stack, versões, por quê
+    conventions.md        # padrões, nomes, erros
+    principles.md         # regras inegociáveis
   sdd/
-    INDEX.md                   # dashboard das specs (não é fonte de verdade)
-    PLAN.md                    # plano do produto (opcional p/ pequeno, recomendado p/ médio)
+    INDEX.md              # dashboard (não é a verdade)
+    PLAN.md               # plano do produto (opcional)
     ideas/
-      001-ideia-explorada.md   # exploração antes do compromisso
+      001-ideia-explorada.md
     specs/
       001-nome-da-feature/
-        .status                # o gate: uma linha, fonte única de verdade
-        requirements.md        # O QUE — contrato de produto
-        design.md              # COMO — contrato técnico
-        tasks.md               # QUANTO — plano de implementação
-        review.md              # verificação com evidência
-        decisions.md           # log leve de decisões técnicas (opcional)
+        .status           # o gate: fonte única
+        requirements.md   # O QUE: contrato de produto
+        design.md         # COMO: contrato técnico
+        tasks.md          # QUANTO: o plano
+        review.md         # verificação com evidência
+        decisions.md      # log de decisões (opcional)
 ```
 
 ```mermaid
-graph TD
-    ROOT[Projeto] --> AI[.ai/]
-    ROOT --> CM[CLAUDE.md / AGENTS.md]
+---
+config:
+  flowchart:
+    rankSpacing: 28
+---
+flowchart TB
+    ROOT[Projeto] --> CM[CLAUDE.md / AGENTS.md]
+    ROOT --> AI[.ai/]
     AI --> ST[steering/]
-    AI --> SDD[sdd/]
-    ST --> S1[product.md]
-    ST --> S2[tech-stack.md]
-    ST --> S3[conventions.md]
-    ST --> S4[principles.md]
-    SDD --> SP[specs/001-feature/]
-    SP --> R[requirements.md]
-    SP --> D[design.md]
-    SP --> T[tasks.md]
-    SP --> STAT[.status]
+    AI --> SP[sdd/specs/001-feature/]
+
+    subgraph GLOBAL["Vale para o projeto inteiro"]
+        direction TB
+        S1[product.md]
+        S2[tech-stack.md]
+        S3[conventions.md]
+        S4[principles.md]
+        S1 ~~~ S3
+        S2 ~~~ S4
+    end
+
+    subgraph FEATURE["Vale para uma feature"]
+        direction TB
+        STAT[.status]
+        R[requirements.md]
+        D[design.md]
+        T[tasks.md]
+        STAT ~~~ D
+        R ~~~ T
+    end
+
+    ST --> GLOBAL
+    SP --> FEATURE
 
     class STAT accent;
     class R,D,T soft;
     class S1,S2,S3,S4 neutral;
-    class ROOT,AI,ST,SDD,SP,CM muted;
+    class ROOT,AI,ST,SP,CM muted;
 ```
 
 Dois princípios sustentam essa árvore:
@@ -439,19 +468,40 @@ review:done
 ```
 
 ```mermaid
-stateDiagram-v2
-    [*] --> requirements_draft
-    requirements_draft --> requirements_approved: aprovação humana
-    requirements_approved --> design_draft
-    design_draft --> design_approved: aprovação humana
-    design_approved --> tasks_draft
-    tasks_draft --> tasks_approved: aprovação humana
-    tasks_approved --> implementation_in_progress
-    implementation_in_progress --> implementation_done
-    implementation_done --> review_done
-    review_done --> [*]
+---
+config:
+  flowchart:
+    rankSpacing: 26
+---
+flowchart TB
+    subgraph REQ["requirements"]
+        direction LR
+        RD[draft] -->|aprovação humana| RA[approved]
+    end
+    subgraph DES["design"]
+        direction LR
+        DD[draft] -->|aprovação humana| DA[approved]
+    end
+    subgraph TSK["tasks"]
+        direction LR
+        TD[draft] -->|aprovação humana| TA[approved]
+    end
+    subgraph IMP["implementation"]
+        direction LR
+        IP[in-progress] --> ID[done]
+    end
+    subgraph REV["review"]
+        direction LR
+        RV[done]
+    end
 
-    class requirements_approved,design_approved,tasks_approved accent
+    REQ --> DES
+    DES --> TSK
+    TSK --> IMP
+    IMP --> REV
+
+    class RA,DA,TA accent;
+    class RD,DD,TD,IP,ID,RV neutral;
 ```
 
 As regras que tornam o gate real, e não decorativo:
@@ -576,7 +626,7 @@ São seis padrões de frase, e eles cobrem quase tudo que você vai escrever:
 | **Dirigido a evento** | QUANDO [gatilho], O SISTEMA DEVE [resposta]. | QUANDO uma tarefa for concluída, O SISTEMA DEVE registrar o timestamp e o usuário. |
 | **Dirigido a estado** | ENQUANTO [estado], O SISTEMA DEVE [restrição]. | ENQUANTO uma tarefa estiver arquivada, O SISTEMA NÃO DEVE permitir edições. |
 | **Comportamento indesejado** | SE [condição indesejada], O SISTEMA DEVE [mitigação]. | SE mais de 50 subtasks forem criadas, O SISTEMA DEVE exibir "Limite de subtasks atingido" e rejeitar. |
-| **Opcional** | ONDE [flag/config], O SISTEMA DEVE [comportamento]. | ONDE notificações estiverem habilitadas, O SISTEMA DEVE notificar os atribuídos a cada mudança de status. |
+| **Opcional** | ONDE [flag/config], O SISTEMA DEVE [efeito]. | ONDE notificações estiverem habilitadas, O SISTEMA DEVE notificar os atribuídos a cada mudança de status. |
 | **Complexo** | QUANDO [evento] E [condição], O SISTEMA DEVE [A] ANTES DE [B]. | QUANDO uma tarefa for concluída E houver automação configurada, O SISTEMA DEVE executar a automação ANTES DE atualizar o status. |
 
 A estrutura é o ponto. QUANDO, SE, ENQUANTO, DEVE. Lê como um contrato porque é um.
@@ -599,17 +649,13 @@ R: Exclusão em cascata. Confirmação explícita antes:
 "Isso também excluirá 3 subtasks. Continuar?"
 
 **P: Quem vê tarefas sem responsável?**
-R: Todos os membros do workspace, em qualquer papel. Apenas
-owners podem atribuir tarefas a outras pessoas.
+R: Todos os membros do workspace, em qualquer papel. Apenas owners podem atribuir tarefas a outras pessoas.
 
-**P: O que acontece se um responsável for removido do workspace
-com tarefas abertas?**
-R: As tarefas permanecem abertas com assignee nulo. O owner do
-workspace recebe uma notificação listando as tarefas afetadas.
+**P: O que acontece se um responsável for removido do workspace com tarefas abertas?**
+R: As tarefas permanecem abertas com assignee nulo. O owner do workspace recebe uma notificação listando as tarefas afetadas.
 
 **P: Uma tarefa pode pertencer a mais de um projeto?**
-R: Não. Uma tarefa pertence a exatamente um projeto. Restrição
-de v1, não é decisão a revisitar.
+R: Não. Uma tarefa pertence a exatamente um projeto. Restrição de v1, não é decisão a revisitar.
 
 **P: Qual timezone para datas de vencimento?**
 R: Armazenar em UTC. Exibir no timezone do perfil do usuário.
@@ -631,8 +677,7 @@ A melhor forma de ver as técnicas combinadas é um caso difícil de verdade. Es
 # Status: requirements:approved
 
 ## Visão Geral
-Um lojista cria uma cobrança contra um cliente. Isso move dinheiro,
-então precisa ser seguro sob retry e impossível de cobrar em dobro.
+Um lojista cria uma cobrança contra um cliente. Isso move dinheiro, então precisa ser seguro sob retry e impossível de cobrar em dobro.
 
 ## No escopo
 - Criar cobrança a partir de requisição autenticada do lojista.
@@ -647,11 +692,9 @@ então precisa ser seguro sob retry e impossível de cobrar em dobro.
 
 ## Requisitos funcionais (EARS)
 - FR-1  QUANDO um lojista envia POST de cobrança com Idempotency-Key
-        válida, O SISTEMA DEVE criar no máximo uma cobrança para
-        aquela chave.
+        válida, O SISTEMA DEVE criar no máximo uma cobrança para aquela chave.
 - FR-2  QUANDO a mesma Idempotency-Key for reenviada em até 24h,
-        O SISTEMA DEVE retornar a cobrança original e não criar
-        nenhuma nova.
+        O SISTEMA DEVE retornar a cobrança original e não criar nenhuma nova.
 - FR-3  SE o valor for <= 0,
         O SISTEMA DEVE rejeitar com 422 "valor deve ser positivo".
 - FR-4  SE o lojista exceder o rate limit,
@@ -681,9 +724,7 @@ então precisa ser seguro sob retry e impossível de cobrar em dobro.
 - Teste de carga sustenta p95 < 300ms a 200 rps.
 
 ## Confirme antes de construir
-Não escreva código até reformular FR-1 a FR-5 e a constraint de
-unicidade nas suas próprias palavras. Se qualquer critério de
-aceitação estiver ambíguo, pergunte antes de implementar.
+Não escreva código até reformular FR-1 a FR-5 e a constraint de unicidade nas suas próprias palavras. Se qualquer critério de aceitação estiver ambíguo, pergunte antes de implementar.
 ```
 
 Vale ler o que essa spec faz, parte por parte:
@@ -740,9 +781,7 @@ Este capítulo prepara o terreno: os arquivos de steering e o plano do produto �
 # TaskFlow Pro — Visão do Produto
 
 ## Proposta de Valor
-O TaskFlow Pro é um sistema colaborativo de gerenciamento de tarefas
-que permite que times organizem o trabalho em workspaces dedicados,
-com automações e sincronização em tempo real.
+O TaskFlow Pro é um sistema colaborativo de gerenciamento de tarefas que permite que times organizem o trabalho em workspaces dedicados, com automações e sincronização em tempo real.
 
 ## Problema Que Resolvemos
 1. Times precisam de espaços organizados por projeto/cliente
@@ -808,17 +847,17 @@ flowchart TB
         end
         subgraph PKGS["packages/"]
             UI["ui - shadcn/ui"]
+            RT["realtime - tipos Socket.io"]
             DB["database - Prisma"]
             EMAIL["email - React Email"]
-            RT["realtime - tipos Socket.io"]
         end
     end
 
     WEB --> UI
-    API --> DB
-    API --> EMAIL
     WEB --> RT
     API --> RT
+    API --> DB
+    API --> EMAIL
 
     class WEB,API accent;
     class UI,DB,EMAIL,RT neutral;
@@ -834,8 +873,7 @@ flowchart TB
 - **Formulários:** React Hook Form + Zod
 - **Real-time:** Socket.io client
 
-**Por quê:** App Router com React Server Components é o padrão
-da plataforma; React Compiler elimina memoização manual;
+**Por quê:** App Router com React Server Components é o padrão da plataforma; React Compiler elimina memoização manual;
 shadcn/ui dá componentes acessíveis sem lock-in — o código é seu.
 
 ### apps/api (Backend)
@@ -846,39 +884,28 @@ shadcn/ui dá componentes acessíveis sem lock-in — o código é seu.
 - **Real-time:** Socket.io server
 - **Filas:** BullMQ + Redis
 
-**Por quê:** Fastify é 2-3x mais rápido que Express, com validação
-por schema embutida e tipagem de ponta a ponta via type providers.
+**Por quê:** Fastify é 2-3x mais rápido que Express, com validação por schema embutida e tipagem de ponta a ponta via type providers.
 
 ## Versões (majors)
 
-next ^16 · react ^19 · fastify ^5 · prisma ^7 · zod ^4
-socket.io ^4 · bullmq ^5 · @tanstack/react-query ^5
+next ^16 · react ^19 · fastify ^5 · prisma ^7 · zod ^4 socket.io ^4 · bullmq ^5 · @tanstack/react-query ^5
 
-As versões exatas ficam no package.json e mudam; as RAZÕES acima
-não. Ao atualizar um major, atualize este arquivo com o que mudou
-de relevante para decisões (ex.: "Next 16: Turbopack é o default,
-cache explícito via 'use cache'"; "Prisma 7: a URL do datasource
-migrou para prisma.config.ts, Client é ESM-first").
+As versões exatas ficam no package.json e mudam; as RAZÕES acima não. Ao atualizar um major, atualize este arquivo com o que mudou de relevante para decisões (ex.: "Next 16: Turbopack é o default, cache explícito via 'use cache'"; "Prisma 7: a URL do datasource migrou para prisma.config.ts, Client é ESM-first").
 
 ## Decisões Arquiteturais
 
 ### Por que Turborepo?
-Cache inteligente entre builds; dependências de workspace tornam
-refatoração entre apps segura; orquestração de tasks para CI.
+Cache inteligente entre builds; dependências de workspace tornam refatoração entre apps segura; orquestração de tasks para CI.
 
 ### Por que PostgreSQL?
-Dados relacionais com integridade referencial (workspace → task →
-subtask) e constraints de unicidade que sustentam regras de negócio
-no banco, não na aplicação.
+Dados relacionais com integridade referencial (workspace → task → subtask) e constraints de unicidade que sustentam regras de negócio no banco, não na aplicação.
 
 ### Por que Socket.io em vez de WebSocket puro?
-Fallback automático, rooms por workspace (mapeiam 1:1 com o nosso
-modelo de permissões), reconexão automática.
+Fallback automático, rooms por workspace (mapeiam 1:1 com o nosso modelo de permissões), reconexão automática.
 
 ### Por que BullMQ para automações?
 Retry automático com backoff, jobs com delay, rate limiting.
-Automações não podem se perder quando a API reinicia — fila
-persistente em Redis resolve isso.
+Automações não podem se perder quando a API reinicia — fila persistente em Redis resolve isso.
 ```
 
 Repare no padrão: **cada escolha carrega a razão.** "PostgreSQL porque constraints de unicidade sustentam regras de negócio no banco" é a frase que, três sessões depois, impede o agente de mover a regra de idempotência para a camada de aplicação. A razão é o que trabalha; a lista de nomes é só inventário.
@@ -924,8 +951,7 @@ Repare no padrão: **cada escolha carrega a razão.** "PostgreSQL porque constra
 # Princípios — TaskFlow Pro
 
 1. NUNCA exponha dados de um workspace para outro. Toda query
-   de recurso filtra por workspace_id — sem exceção, inclusive
-   em joins e agregações.
+   de recurso filtra por workspace_id — sem exceção, inclusive em joins e agregações.
 2. Permissão se verifica no servidor, sempre, antes da lógica
    de negócio. O cliente é uma dica, não uma autoridade.
 3. Operações que tocam mais de uma tabela usam transação.
@@ -1001,9 +1027,7 @@ A primeira spec do projeto é a fundação de todas as outras: sem usuário aute
 **Cobertura:** US-001..US-004, FR-001..FR-008, NFR-001..NFR-002
 
 ## Visão Geral
-Sistema de autenticação para o TaskFlow Pro, com email/senha e
-magic links. Move credenciais e sessões — a spec trata segurança
-como requisito, não como detalhe de implementação.
+Sistema de autenticação para o TaskFlow Pro, com email/senha e magic links. Move credenciais e sessões — a spec trata segurança como requisito, não como detalhe de implementação.
 
 ## Fora do Escopo (v1)
 - Sem OAuth social (Google/GitHub) — v2, exige revisão de LGPD
@@ -1062,35 +1086,26 @@ como requisito, não como detalhe de implementação.
 O SISTEMA DEVE armazenar senhas com bcrypt, fator de custo 12.
 
 ### FR-002 (Must Have) — US-002
-O SISTEMA DEVE emitir JWT de acesso com expiração de 1 hora e
-refresh token de 7 dias (30 dias com "lembrar de mim").
+O SISTEMA DEVE emitir JWT de acesso com expiração de 1 hora e refresh token de 7 dias (30 dias com "lembrar de mim").
 
 ### FR-003 (Must Have) — US-004
-QUANDO a senha for alterada, O SISTEMA DEVE invalidar todos os
-refresh tokens do usuário.
+QUANDO a senha for alterada, O SISTEMA DEVE invalidar todos os refresh tokens do usuário.
 
 ### FR-004 (Must Have) — US-002
 SE houver 5 tentativas de login falhas para o mesmo email,
-O SISTEMA DEVE bloquear novas tentativas por 15 minutos e
-responder 429 com Retry-After.
+O SISTEMA DEVE bloquear novas tentativas por 15 minutos e responder 429 com Retry-After.
 
 ### FR-005 (Must Have) — US-003
-QUANDO um magic link for usado, O SISTEMA DEVE marcá-lo como
-consumido e rejeitar reuso com 401 "Link expirado ou já usado".
+QUANDO um magic link for usado, O SISTEMA DEVE marcá-lo como consumido e rejeitar reuso com 401 "Link expirado ou já usado".
 
 ### FR-006 (Must Have) — US-001
-ENQUANTO o email não estiver verificado, O SISTEMA NÃO DEVE
-permitir login por senha (responder 403 com instrução de
-reenviar verificação).
+ENQUANTO o email não estiver verificado, O SISTEMA NÃO DEVE permitir login por senha (responder 403 com instrução de reenviar verificação).
 
 ### FR-007 (Should Have)
-O SISTEMA DEVE registrar toda tentativa de login (sucesso e
-falha) com IP e user-agent, para auditoria.
+O SISTEMA DEVE registrar toda tentativa de login (sucesso e falha) com IP e user-agent, para auditoria.
 
 ### FR-008 (Must Have)
-O SISTEMA DEVE responder à recuperação de senha com a mesma
-mensagem exista ou não a conta ("Email enviado se a conta
-existir") — sem enumeração de usuários.
+O SISTEMA DEVE responder à recuperação de senha com a mesma mensagem exista ou não a conta ("Email enviado se a conta existir") — sem enumeração de usuários.
 
 ## Requisitos Não Funcionais
 
@@ -1108,19 +1123,14 @@ existir") — sem enumeração de usuários.
 ## FAQ de Implementação
 
 **P: Cadastro com email já existente — o que responde?**
-R: 200 com a mesma mensagem de sucesso ("Confira seu email") e
-email de aviso para o dono da conta. Sem enumeração (FR-008 se
-aplica ao cadastro também).
+R: 200 com a mesma mensagem de sucesso ("Confira seu email") e email de aviso para o dono da conta. Sem enumeração (FR-008 se aplica ao cadastro também).
 
 **P: Magic link para email sem conta?**
-R: Cria a conta no primeiro uso do link (nome fica vazio, pedido
-no onboarding). Decisão D-001: reduzir fricção vale mais que
-formulário completo.
+R: Cria a conta no primeiro uso do link (nome fica vazio, pedido no onboarding). Decisão D-001: reduzir fricção vale mais que formulário completo.
 
 **P: Refresh token é rotacionado?**
 R: Sim. Cada refresh emite novo par e invalida o anterior.
-Reuso de refresh antigo = possível roubo: invalida a sessão
-inteira e exige novo login.
+Reuso de refresh antigo = possível roubo: invalida a sessão inteira e exige novo login.
 ```
 
 Três coisas para notar antes do design. Primeiro, o **FR-008 existe por causa do FAQ**: a pergunta "o que responde quando o email já existe?" forçou a decisão anti-enumeração, que virou requisito. Segundo, os FRs referenciam as user stories que cobrem — essa é a rastreabilidade barata que paga na fase de tasks. Terceiro, o escopo negativo tem razões ("exige revisão de LGPD") — uma linha que impede o agente de "aproveitar para adicionar OAuth".
@@ -1140,42 +1150,37 @@ O fluxo principal:
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuário
-    participant F as Frontend
+    participant W as App web
     participant A as API
-    participant D as Banco
     participant E as Email
+    participant D as Banco
 
-    Note over U,E: Cadastro
-    U->>F: Preenche formulário
-    F->>A: POST /auth/register
-    A->>D: Criar usuário (não verificado)
-    A->>E: Email de verificação (fila)
-    A->>F: 201 Created
-    F->>U: "Confira seu email"
+    Note over W,D: Cadastro
+    W->>A: POST /auth/register
+    A->>D: Cria usuário (não verificado)
+    A->>E: Email de verificação
+    A-->>W: 201 Created
 
-    Note over U,E: Login
-    U->>F: Email + senha
-    F->>A: POST /auth/login
-    A->>D: Verificar credenciais + rate limit
-    A->>D: Criar sessão (refresh token)
-    A->>F: accessToken + cookie refresh
-    F->>U: Redireciona ao workspace
+    Note over W,D: Login
+    W->>A: POST /auth/login
+    A->>D: Verifica credenciais
+    A->>D: Cria sessão
+    A-->>W: Token de acesso + cookie
 ```
 
 ```markdown
 ## Mapeamento de Requisitos
 
 | Requisito | Decisão de design |
-|-----------|-------------------|
-| FR-001 | bcrypt cost 12 no AuthService.hashPassword (TD-001) |
-| FR-002 | JWT assinado + tabela Session p/ refresh (TD-002) |
-| FR-003 | deleteMany(sessions) na troca de senha |
-| FR-004 | Rate limiter por email em Redis (TD-003) |
-| FR-005 | MagicLink.usedAt + verificação atômica |
-| FR-006 | Checagem emailVerified antes de comparar senha |
-| FR-007 | Tabela LoginAttempt, escrita assíncrona |
-| FR-008 | Respostas idênticas nos fluxos de email |
+| --------- | ----------------- |
+| FR-001    | bcrypt cost 12 no AuthService.hashPassword (TD-001) |
+| FR-002    | JWT assinado + tabela Session p/ refresh (TD-002) |
+| FR-003    | deleteMany(sessions) na troca de senha |
+| FR-004    | Rate limiter por email em Redis (TD-003) |
+| FR-005    | MagicLink.usedAt + verificação atômica |
+| FR-006    | Checagem emailVerified antes de comparar senha |
+| FR-007    | Tabela LoginAttempt, escrita assíncrona |
+| FR-008    | Respostas idênticas nos fluxos de email |
 
 ## Modelo de Dados
 
@@ -1264,18 +1269,13 @@ GET  /api/v1/auth/me              Bearer -> 200 { user }
 ## Decisões Técnicas
 
 ### TD-001: bcrypt, não argon2
-Argon2 é tecnicamente superior, mas bcrypt cost 12 atende o
-modelo de ameaça deste produto e tem suporte trivial no
-ecossistema Node. Revisitar se o produto virar alvo de valor.
+Argon2 é tecnicamente superior, mas bcrypt cost 12 atende o modelo de ameaça deste produto e tem suporte trivial no ecossistema Node. Revisitar se o produto virar alvo de valor.
 
 ### TD-002: refresh token em tabela, não em JWT
-Refresh em banco permite revogação imediata (FR-003) e rotação
-com detecção de reuso. JWT puro não revoga. O custo (1 query
-por refresh) é aceitável: refresh acontece 1x/hora por usuário.
+Refresh em banco permite revogação imediata (FR-003) e rotação com detecção de reuso. JWT puro não revoga. O custo (1 query por refresh) é aceitável: refresh acontece 1x/hora por usuário.
 
 ### TD-003: rate limit em Redis
-O contador precisa sobreviver a restart e valer entre instâncias
-da API. Redis já está na stack (BullMQ).
+O contador precisa sobreviver a restart e valer entre instâncias da API. Redis já está na stack (BullMQ).
 
 ## Casos de Borda
 - Refresh token reusado após rotação -> sessão inteira revogada
@@ -1307,14 +1307,14 @@ A tabela de **mapeamento de requisitos** é a seção mais importante do design 
 - [x] FAQ sem perguntas abertas
 
 ## Cobertura
-| Requisito | Tasks |
-|-----------|-------|
-| FR-001, FR-002 | T2.1 |
-| FR-003 | T2.1, T2.2 |
-| FR-004 | T2.2 |
-| FR-005, FR-006 | T2.1 |
-| FR-007 | T2.2 |
-| FR-008 | T2.2, T3.2 |
+| Requisito      | Tasks      |
+| -------------- | ---------- |
+| FR-001, FR-002 | T2.1       |
+| FR-003         | T2.1, T2.2 |
+| FR-004         | T2.2       |
+| FR-005, FR-006 | T2.1       |
+| FR-007         | T2.2       |
+| FR-008         | T2.2, T3.2 |
 
 ## Fase 1: Modelos e infraestrutura (0.5 dia)
 
@@ -1384,10 +1384,7 @@ Workspaces são o coração do modelo de segurança do TaskFlow Pro: **tudo** no
 **Status:** requirements:approved
 
 ## Visão Geral
-Workspaces são espaços de trabalho isolados em que times colaboram
-em tarefas. Cada workspace tem seus próprios membros, tarefas e
-configurações. O isolamento entre workspaces é a regra de segurança
-central do produto.
+Workspaces são espaços de trabalho isolados em que times colaboram em tarefas. Cada workspace tem seus próprios membros, tarefas e configurações. O isolamento entre workspaces é a regra de segurança central do produto.
 
 ## Fora do Escopo (v1)
 - Sem workspaces aninhados ou "organizações" acima de workspaces
@@ -1442,8 +1439,7 @@ central do produto.
 
 ### FR-001 (Must Have)
 O SISTEMA DEVE isolar completamente os dados entre workspaces:
-toda query de recurso filtra por workspace_id, inclusive joins,
-agregações e eventos em tempo real.
+toda query de recurso filtra por workspace_id, inclusive joins, agregações e eventos em tempo real.
 
 ### FR-002 (Must Have)
 O SISTEMA DEVE verificar a permissão do usuário no workspace
@@ -1451,46 +1447,38 @@ ANTES de qualquer lógica de negócio, em toda operação.
 
 ### FR-003 (Must Have)
 ENQUANTO um workspace existir, O SISTEMA DEVE manter ao menos um
-ADMIN: a última pessoa com papel de admin não pode ser removida,
-rebaixada nem sair.
+ADMIN: a última pessoa com papel de admin não pode ser removida, rebaixada nem sair.
 
 ### FR-004 (Must Have)
-QUANDO um membro for removido ou sair, O SISTEMA DEVE revogar o
-acesso imediatamente e desconectá-lo das rooms de tempo real do
-workspace.
+QUANDO um membro for removido ou sair, O SISTEMA DEVE revogar o acesso imediatamente e desconectá-lo das rooms de tempo real do workspace.
 
 ### FR-005 (Should Have)
-O SISTEMA DEVE permitir transferência de propriedade: promover
-outro membro a ADMIN e, opcionalmente, rebaixar-se em seguida.
+O SISTEMA DEVE permitir transferência de propriedade: promover outro membro a ADMIN e, opcionalmente, rebaixar-se em seguida.
 
 ### FR-006 (Must Have)
 SE um convite for aceito após expirar (7 dias),
-O SISTEMA DEVE responder 410 "Convite expirado" e oferecer
-solicitar um novo.
+O SISTEMA DEVE responder 410 "Convite expirado" e oferecer solicitar um novo.
 
 ## Papéis e Permissões
 
-| Ação | ADMIN | MEMBER |
-|------|-------|--------|
-| Criar tarefas | sim | sim |
-| Editar/excluir qualquer tarefa | sim | apenas as próprias |
-| Convidar/remover membros | sim | não |
-| Editar/excluir workspace | sim | não |
+| Ação                           | ADMIN | MEMBER |
+| ------------------------------ | ----- | ------ |
+| Criar tarefas                  | sim   | sim |
+| Editar/excluir qualquer tarefa | sim   | apenas as próprias |
+| Convidar/remover membros       | sim   | não |
+| Editar/excluir workspace       | sim   | não |
 
 ## FAQ de Implementação
 
 **P: Convite para email que ainda não tem conta?**
-R: O aceite passa pelo fluxo de cadastro (ou magic link) e então
-consome o convite. O convite referencia o email, não o userId.
+R: O aceite passa pelo fluxo de cadastro (ou magic link) e então consome o convite. O convite referencia o email, não o userId.
 
 **P: O que acontece com as tarefas ao excluir um workspace?**
-R: Exclusão em cascata de tudo (tarefas, tags, convites, membros),
-com confirmação dupla na UI ("digite o nome do workspace").
+R: Exclusão em cascata de tudo (tarefas, tags, convites, membros), com confirmação dupla na UI ("digite o nome do workspace").
 Sem lixeira no MVP — decisão D-001, registrada com o risco.
 
 **P: Usuário pode pertencer a quantos workspaces?**
-R: Sem limite no MVP. NFR de escala: até 100 membros por
-workspace, até 50 workspaces por usuário sem degradação.
+R: Sem limite no MVP. NFR de escala: até 100 membros por workspace, até 50 workspaces por usuário sem degradação.
 ```
 
 ### 7.2 Design
@@ -1509,8 +1497,8 @@ erDiagram
     USER ||--o{ WORKSPACE_MEMBER : "pertence a"
     WORKSPACE ||--o{ WORKSPACE_MEMBER : "tem"
     WORKSPACE ||--o{ WORKSPACE_INVITE : "tem"
-    WORKSPACE ||--o{ TASK : "contem"
-    WORKSPACE ||--o{ TAG : "define"
+    TASK }o--|| WORKSPACE : "vive em"
+    TAG }o--|| WORKSPACE : "vive em"
 
     USER {
         string id PK
@@ -1539,7 +1527,7 @@ erDiagram
 ## Mapeamento de Requisitos
 
 | Requisito | Decisão de design |
-|-----------|-------------------|
+| --------- | ----------------- |
 | FR-001 | workspace_id em toda tabela filha; helper de query
           obrigatório (TD-001) |
 | FR-002 | checkWorkspaceAccess como preHandler de rota (TD-002) |
@@ -1614,9 +1602,7 @@ enum WorkspaceRole {
 
 ```markdown
 
-Repare: @@unique([workspaceId, email]) impede convites duplicados
-para o mesmo email — regra de negócio no banco, como manda o
-principles.md.
+Repare: @@unique([workspaceId, email]) impede convites duplicados para o mesmo email — regra de negócio no banco, como manda o principles.md.
 
 ## API
 
@@ -1644,17 +1630,11 @@ POST   /api/v1/invites/:token/accept         -> 200 { workspace }
 ## Decisões Técnicas
 
 ### TD-001: helper de query com workspace_id obrigatório
-Todo acesso a recursos de workspace passa por um helper que exige
-workspaceId como parâmetro tipado. Query direta ao Prisma para
-recursos de workspace é proibida por convenção + lint rule.
-Alternativa considerada: RLS no Postgres — mais forte, porém mais
-opaco para debug; fica anotada para quando houver dados sensíveis
-regulados.
+Todo acesso a recursos de workspace passa por um helper que exige workspaceId como parâmetro tipado. Query direta ao Prisma para recursos de workspace é proibida por convenção + lint rule.
+Alternativa considerada: RLS no Postgres — mais forte, porém mais opaco para debug; fica anotada para quando houver dados sensíveis regulados.
 
 ### TD-002: permissão como preHandler
-checkWorkspaceAccess(userId, workspaceId, requiredRole?) roda como
-preHandler do Fastify em toda rota de workspace — antes do body
-ser processado. Handler nenhum re-implementa checagem.
+checkWorkspaceAccess(userId, workspaceId, requiredRole?) roda como preHandler do Fastify em toda rota de workspace — antes do body ser processado. Handler nenhum re-implementa checagem.
 
 ## Verificação de Permissões (contrato)
 
@@ -1705,14 +1685,14 @@ async function checkWorkspaceAccess(
 **Estimativa total:** 3 dias
 
 ## Cobertura
-| Requisito | Tasks |
-|-----------|-------|
-| FR-001 | T1.2, T1.4 |
-| FR-002 | T1.4 |
-| FR-003 | T1.2, T1.3 |
-| FR-004 | T1.3 (evento; consumo na spec 005) |
-| FR-005 | T1.3 |
-| FR-006 | T1.3 |
+| Requisito | Tasks                              |
+| --------- | ---------------------------------- |
+| FR-001    | T1.2, T1.4                         |
+| FR-002    | T1.4                               |
+| FR-003    | T1.2, T1.3                         |
+| FR-004    | T1.3 (evento; consumo na spec 005) |
+| FR-005    | T1.3                               |
+| FR-006    | T1.3                               |
 
 ## Fase 1: Backend (1.5 dias)
 
@@ -1738,15 +1718,13 @@ async function checkWorkspaceAccess(
 - [ ] updateRole / remove / leave — todos validando FR-003
       em transação
 - [ ] Evento member:removed (FR-004)
-**Verificação:** `pnpm test member.service` — casos de borda do
-último admin cobertos
+**Verificação:** `pnpm test member.service` — casos de borda do último admin cobertos
 
 ### T1.4: Rotas + preHandler
 **Estimativa:** 3h · **Dependências:** T1.2, T1.3
 - [ ] Todos os endpoints com schemas Zod
 - [ ] checkWorkspaceAccess como preHandler (TD-002)
-**Verificação:** teste de rota: 403 para não-membro em TODAS as
-rotas do workspace
+**Verificação:** teste de rota: 403 para não-membro em TODAS as rotas do workspace
 
 ## Fase 2: Frontend (1.5 dias)
 
@@ -1764,8 +1742,7 @@ rotas do workspace
 **Estimativa:** 4h · **Dependências:** T2.1
 - [ ] Página de configurações; gerenciamento de membros
 - [ ] Modal de convite; estados de erro (último admin, expirado)
-**Verificação:** Playwright: convidar -> aceitar -> rebaixar ->
-bloquear último admin
+**Verificação:** Playwright: convidar -> aceitar -> rebaixar -> bloquear último admin
 ```
 
 A suite de isolamento do T1.2 merece uma frase: ela é o FR-001 transformado em teste permanente. Num sistema multi-tenant, esse é o teste que você quer vendo quebrar **antes** do commit — não no suporte, com um cliente lendo os dados de outro.
@@ -1786,10 +1763,8 @@ O core do produto — e a spec mais densa do livro. Ela exercita tudo de uma vez
 **Status:** requirements:approved
 
 ## Visão Geral
-Sistema completo de tarefas com subtasks, tags, datas de
-vencimento, múltiplos assignees e atualização em tempo real.
-Tarefas são o núcleo do produto: automações (004) e notificações
-(005) reagem aos eventos definidos aqui.
+Sistema completo de tarefas com subtasks, tags, datas de vencimento, múltiplos assignees e atualização em tempo real.
+Tarefas são o núcleo do produto: automações (004) e notificações (005) reagem aos eventos definidos aqui.
 
 ## Fora do Escopo (v1)
 - Sem tarefas recorrentes
@@ -1855,23 +1830,18 @@ Tarefas são o núcleo do produto: automações (004) e notificações
 ## Requisitos Funcionais (EARS)
 
 ### FR-001 (Must Have)
-O SISTEMA DEVE validar a permissão do workspace antes de qualquer
-operação de tarefa (herda FR-002 da spec 002).
+O SISTEMA DEVE validar a permissão do workspace antes de qualquer operação de tarefa (herda FR-002 da spec 002).
 
 ### FR-002 (Must Have)
 QUANDO uma tarefa for criada, alterada ou excluída, O SISTEMA
-DEVE emitir o evento correspondente na room do workspace em
-menos de 200ms.
+DEVE emitir o evento correspondente na room do workspace em menos de 200ms.
 
 ### FR-003 (Must Have)
-QUANDO qualquer campo de uma tarefa mudar, O SISTEMA DEVE
-registrar a alteração no audit log (ator, campo, valor anterior,
-valor novo, timestamp).
+QUANDO qualquer campo de uma tarefa mudar, O SISTEMA DEVE registrar a alteração no audit log (ator, campo, valor anterior, valor novo, timestamp).
 
 ### FR-004 (Must Have)
 SE um MEMBER tentar editar ou excluir tarefa de outra pessoa,
-O SISTEMA DEVE responder 403 "Apenas o criador ou um admin pode
-alterar esta tarefa".
+O SISTEMA DEVE responder 403 "Apenas o criador ou um admin pode alterar esta tarefa".
 
 ### FR-005 (Must Have)
 SE a 51ª subtask for criada,
@@ -1879,12 +1849,10 @@ O SISTEMA DEVE rejeitar com 422 "Limite de 50 subtasks atingido".
 
 ### FR-006 (Must Have)
 QUANDO uma tarefa for concluída E houver automação configurada,
-O SISTEMA DEVE enfileirar a automação ANTES de confirmar a
-resposta ao cliente (contrato com a spec 004).
+O SISTEMA DEVE enfileirar a automação ANTES de confirmar a resposta ao cliente (contrato com a spec 004).
 
 ### FR-007 (Should Have)
-O SISTEMA DEVE suportar reordenação por drag-and-drop com
-persistência da posição.
+O SISTEMA DEVE suportar reordenação por drag-and-drop com persistência da posição.
 
 ### FR-008 (Could Have)
 ONDE o workspace tiver mais de 1.000 tarefas ativas, O SISTEMA
@@ -1906,22 +1874,17 @@ PODE paginar a lista com cursor em vez de offset.
 R: Cascata, com confirmação: "Isso também excluirá N subtasks."
 
 **P: Assignee removido do workspace?**
-R: Tarefas ficam com assignee nulo; owner é notificado (regra
-herdada da spec 002, US-004).
+R: Tarefas ficam com assignee nulo; owner é notificado (regra herdada da spec 002, US-004).
 
 **P: Concluir tarefa com subtasks abertas?**
-R: Permitido, com aviso na UI ("2 subtasks abertas"). A tarefa
-pai não é bloqueada por subtasks — decisão D-003: o produto
-não impõe processo ao time.
+R: Permitido, com aviso na UI ("2 subtasks abertas"). A tarefa pai não é bloqueada por subtasks — decisão D-003: o produto não impõe processo ao time.
 
 **P: Edição concorrente (dois membros, mesma tarefa)?**
-R: Last-write-wins por campo + evento task:updated corrige a UI
-do outro. Sem locking otimista no MVP — registrado como risco
+R: Last-write-wins por campo + evento task:updated corrige a UI do outro. Sem locking otimista no MVP — registrado como risco
 R-001 com gatilho de revisão (reclamações de sobrescrita).
 
 **P: Timezone das datas de vencimento?**
-R: Armazenar UTC; exibir no timezone do perfil; "hoje" e
-"atrasada" calculados no timezone do usuário.
+R: Armazenar UTC; exibir no timezone do perfil; "hoje" e "atrasada" calculados no timezone do usuário.
 ```
 
 ### 8.2 Design
@@ -1939,32 +1902,36 @@ O ciclo de vida de uma tarefa:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> TODO: criar
-    TODO --> IN_PROGRESS: iniciar
-    TODO --> DONE: concluir
-    IN_PROGRESS --> TODO: pausar
-    IN_PROGRESS --> DONE: concluir
-    DONE --> TODO: reabrir
-    TODO --> ARCHIVED: arquivar
-    IN_PROGRESS --> ARCHIVED: arquivar
-    DONE --> ARCHIVED: arquivar
-    ARCHIVED --> TODO: restaurar
-    DONE --> [*]
+    [*] --> Active: criar
+    state Active {
+        direction LR
+        [*] --> TODO
+        TODO --> IN_PROGRESS: iniciar
+        IN_PROGRESS --> TODO: pausar
+        IN_PROGRESS --> DONE: concluir
+        TODO --> DONE: concluir
+        DONE --> TODO: reabrir
+    }
+    Active --> ARCHIVED: arquivar
+    ARCHIVED --> Active: restaurar
+
+    class DONE accent
+    class ARCHIVED muted
 ```
 
 ```markdown
 ## Mapeamento de Requisitos
 
 | Requisito | Decisão de design |
-|-----------|-------------------|
-| FR-001 | preHandler da spec 002 em todas as rotas |
-| FR-002 | Emissão no service, pós-commit (TD-001) |
-| FR-003 | TaskActivity + logActivity no service (TD-002) |
-| FR-004 | Checagem creator-or-admin no service |
-| FR-005 | Contagem na transação de criação de subtask |
-| FR-006 | Job BullMQ enfileirado na mesma transação (TD-003) |
-| FR-007 | Campo position + endpoint de reorder |
-| FR-008 | Paginação por cursor no findAll |
+| --------- | ----------------- |
+| FR-001    | preHandler da spec 002 em todas as rotas |
+| FR-002    | Emissão no service, pós-commit (TD-001) |
+| FR-003    | TaskActivity + logActivity no service (TD-002) |
+| FR-004    | Checagem creator-or-admin no service |
+| FR-005    | Contagem na transação de criação de subtask |
+| FR-006    | Job BullMQ enfileirado na mesma transação (TD-003) |
+| FR-007    | Campo position + endpoint de reorder |
+| FR-008    | Paginação por cursor no findAll |
 
 ## Modelo de Dados
 
@@ -2133,19 +2100,14 @@ interface TaskEvents {
 ## Decisões Técnicas
 
 ### TD-001: eventos emitidos pós-commit
-O evento sai DEPOIS da transação confirmar. Emitir antes cria a
-pior classe de bug de tempo real: UI mostrando estado que o banco
-rejeitou. Custo: alguns ms de latência a mais. Aceito.
+O evento sai DEPOIS da transação confirmar. Emitir antes cria a pior classe de bug de tempo real: UI mostrando estado que o banco rejeitou. Custo: alguns ms de latência a mais. Aceito.
 
 ### TD-002: audit log síncrono na mesma transação
 Alternativa considerada: log assíncrono via fila (mais rápido).
-Rejeitada: FR-003 é requisito de auditoria; um log que pode se
-perder não audita nada. O insert é barato (uma linha indexada).
+Rejeitada: FR-003 é requisito de auditoria; um log que pode se perder não audita nada. O insert é barato (uma linha indexada).
 
 ### TD-003: automação enfileirada na transação (outbox simples)
-O job BullMQ do FR-006 é registrado numa tabela outbox na MESMA
-transação da conclusão; um worker publica na fila. Garante que
-"tarefa concluída sem automação disparada" não existe.
+O job BullMQ do FR-006 é registrado numa tabela outbox na MESMA transação da conclusão; um worker publica na fila. Garante que "tarefa concluída sem automação disparada" não existe.
 
 ## Casos de Borda
 - Concluir tarefa já concluída -> idempotente, 200 sem novo evento
@@ -2174,16 +2136,16 @@ transação da conclusão; um worker publica na fila. Garante que
 **Estimativa total:** 5 dias
 
 ## Cobertura
-| Requisito | Tasks |
-|-----------|-------|
-| FR-001 | T2.5 |
-| FR-002 | T3.1, T3.2 |
-| FR-003 | T2.4 |
-| FR-004 | T2.1, T2.5 |
-| FR-005 | T2.2 |
-| FR-006 | T2.1 (outbox; consumo na spec 004) |
-| FR-007 | T2.1, T4.5 |
-| FR-008 | T2.1 |
+| Requisito | Tasks                              |
+| --------- | ---------------------------------- |
+| FR-001    | T2.5                               |
+| FR-002    | T3.1, T3.2                         |
+| FR-003    | T2.4                               |
+| FR-004    | T2.1, T2.5                         |
+| FR-005    | T2.2                               |
+| FR-006    | T2.1 (outbox; consumo na spec 004) |
+| FR-007    | T2.1, T4.5                         |
+| FR-008    | T2.1                               |
 
 ## Fase 1: Modelos (0.5 dia)
 
@@ -2201,8 +2163,7 @@ transação da conclusão; um worker publica na fila. Garante que
 - [ ] updateStatus (máquina de estados do design)
 - [ ] reorder em lote; outbox de automação (TD-003)
 - [ ] Regra creator-or-admin (FR-004)
-**Verificação:** `pnpm test task.service` — toda transição do
-diagrama de estados tem teste
+**Verificação:** `pnpm test task.service` — toda transição do diagrama de estados tem teste
 
 ### T2.2: SubtaskService
 **Estimativa:** 2h · **Dependências:** T1.1
@@ -2229,8 +2190,7 @@ diagrama de estados tem teste
 ### T3.1: Socket.io
 **Estimativa:** 2h · **Dependências:** —
 - [ ] Servidor + middleware de auth JWT; rooms ws:{workspaceId}
-**Verificação:** conexão sem token cai; membro entra só nas
-próprias rooms
+**Verificação:** conexão sem token cai; membro entra só nas próprias rooms
 
 ### T3.2: Emissores
 **Estimativa:** 2h · **Dependências:** T3.1, T2.1
@@ -2283,9 +2243,7 @@ Automações são o diferencial do produto — e a spec mais perigosa dele. "Qua
 **Status:** requirements:approved
 
 ## Visão Geral
-Automações do tipo "quando X acontecer, faça Y" para reduzir
-trabalho manual. Executam de forma assíncrona, com histórico
-inspecionável e limites rígidos contra loops.
+Automações do tipo "quando X acontecer, faça Y" para reduzir trabalho manual. Executam de forma assíncrona, com histórico inspecionável e limites rígidos contra loops.
 
 ## Fora do Escopo (v1)
 - Sem automações multi-passo (encadear várias actions) — v2
@@ -2316,66 +2274,54 @@ inspecionável e limites rígidos contra loops.
 - [ ] Qual tarefa disparou cada execução
 
 ## Triggers (v1)
-| Trigger | Evento de origem |
-|---------|------------------|
-| task_created | Tarefa criada |
-| task_completed | Tarefa concluída |
-| task_assigned | Tarefa atribuída |
-| task_overdue | Vencimento ultrapassado (job diário) |
-| tag_added | Tag adicionada a uma tarefa |
+| Trigger        | Evento de origem                     |
+| -------------- | ------------------------------------ |
+| task_created   | Tarefa criada                        |
+| task_completed | Tarefa concluída                     |
+| task_assigned  | Tarefa atribuída                     |
+| task_overdue   | Vencimento ultrapassado (job diário) |
+| tag_added      | Tag adicionada a uma tarefa          |
 
 ## Actions (v1)
-| Action | Efeito |
-|--------|--------|
-| create_task | Cria nova tarefa |
-| assign_task | Atribui a um membro |
-| add_tag | Adiciona uma tag |
+| Action            | Efeito                          |
+| ----------------- | ------------------------------- |
+| create_task       | Cria nova tarefa                |
+| assign_task       | Atribui a um membro             |
+| add_tag           | Adiciona uma tag                |
 | send_notification | Notifica membros (via spec 005) |
-| change_status | Muda o status da tarefa |
+| change_status     | Muda o status da tarefa         |
 
 ## Requisitos Funcionais (EARS)
 
 ### FR-001 (Must Have)
-O SISTEMA DEVE executar automações de forma assíncrona, via fila
-persistente — nunca no request que originou o evento.
+O SISTEMA DEVE executar automações de forma assíncrona, via fila persistente — nunca no request que originou o evento.
 
 ### FR-002 (Must Have)
-O SISTEMA DEVE impedir loops: no máximo profundidade 3 de
-automações encadeadas, no máximo 5 execuções por evento de
-origem, e a mesma automação nunca executa duas vezes na mesma
-cadeia.
+O SISTEMA DEVE impedir loops: no máximo profundidade 3 de automações encadeadas, no máximo 5 execuções por evento de origem, e a mesma automação nunca executa duas vezes na mesma cadeia.
 
 ### FR-003 (Must Have)
 QUANDO uma execução falhar, O SISTEMA DEVE tentar novamente até
-3 vezes com backoff exponencial e, esgotadas as tentativas,
-registrar FAILED com o erro completo no histórico.
+3 vezes com backoff exponencial e, esgotadas as tentativas, registrar FAILED com o erro completo no histórico.
 
 ### FR-004 (Must Have)
 SE a 11ª automação for criada num workspace,
-O SISTEMA DEVE rejeitar com 422 "Limite de 10 automações
-atingido".
+O SISTEMA DEVE rejeitar com 422 "Limite de 10 automações atingido".
 
 ### FR-005 (Should Have)
-O SISTEMA DEVE avaliar condições (tags, assignees, prioridade)
-antes de executar a action, registrando execução SKIPPED quando
-não casarem.
+O SISTEMA DEVE avaliar condições (tags, assignees, prioridade) antes de executar a action, registrando execução SKIPPED quando não casarem.
 
 ## FAQ de Implementação
 
 **P: Automação executa para eventos gerados por outra automação?**
-R: Sim — é esse encadeamento que o FR-002 limita. O contexto de
-execução viaja com a cadeia inteira.
+R: Sim — é esse encadeamento que o FR-002 limita. O contexto de execução viaja com a cadeia inteira.
 
-**P: O que acontece com execuções em voo quando a automação é
-desabilitada?**
+**P: O que acontece com execuções em voo quando a automação é desabilitada?**
 R: Jobs já enfileirados executam; novos eventos não enfileiram.
-Desabilitar não é cancelar — decisão D-001, registrada para a UI
-comunicar ("execuções pendentes ainda serão concluídas").
+Desabilitar não é cancelar — decisão D-001, registrada para a UI comunicar ("execuções pendentes ainda serão concluídas").
 
 **P: Automação criada por um admin que saiu do workspace?**
 R: Continua ativa (pertence ao workspace, não ao criador).
-Actions que referenciam o ex-membro (assign_task) passam a
-registrar FAILED com erro claro.
+Actions que referenciam o ex-membro (assign_task) passam a registrar FAILED com erro claro.
 
 ## Exemplo Completo
 
@@ -2397,11 +2343,20 @@ Action: assign_task -> dev@empresa.com
 ```
 
 ```mermaid
-flowchart LR
-    EVT[Evento task_created] --> OB[Outbox da spec 003]
-    OB --> BQ[Fila BullMQ]
-    BQ --> PROC[Worker: buscar automações]
-    PROC --> COND{Condições casam?}
+---
+config:
+  flowchart:
+    rankSpacing: 30
+---
+flowchart TB
+    subgraph IN["Captura - spec 003"]
+        direction LR
+        EVT[Evento task_created] --> OB[Linha no outbox]
+        OB --> BQ[Fila BullMQ]
+    end
+
+    IN --> PROC[Worker: buscar automações]
+    PROC --> COND{{Condições casam?}}
     COND -->|sim| EXEC[Executar action]
     COND -->|não| SKIP[Registrar SKIPPED]
     EXEC --> LOG[Registrar execução]
@@ -2417,9 +2372,9 @@ flowchart LR
 ## Mapeamento de Requisitos
 
 | Requisito | Decisão de design |
-|-----------|-------------------|
-| FR-001 | Consumo do outbox (TD-003 da spec 003) via BullMQ |
-| FR-002 | AutomationContext viaja no payload do job (TD-001) |
+| --------- | ----------------- |
+| FR-001    | Consumo do outbox (TD-003 da spec 003) via BullMQ |
+| FR-002    | AutomationContext viaja no payload do job (TD-001) |
 | FR-003 | Retry nativo do BullMQ + registro em
           AutomationExecution |
 | FR-004 | Contagem na transação de criação |
@@ -2544,17 +2499,10 @@ function canExecute(ctx: AutomationContext, automationId: string): boolean {
 ## Decisões Técnicas
 
 ### TD-001: o contexto viaja no job, não em estado global
-O AutomationContext é serializado no payload de cada job da
-cadeia. Alternativa considerada: rastrear cadeias em Redis por
-correlationId — mais flexível, porém cria estado fora da fila
-que pode vazar. O payload é autossuficiente e o limite é
-verificável em teste unitário puro.
+O AutomationContext é serializado no payload de cada job da cadeia. Alternativa considerada: rastrear cadeias em Redis por correlationId — mais flexível, porém cria estado fora da fila que pode vazar. O payload é autossuficiente e o limite é verificável em teste unitário puro.
 
 ### TD-002: trigger/action como Json versionado
-Os campos trigger e action são Json com um campo type — não
-colunas tipadas. Razão: adicionar um trigger novo em v2 não pode
-exigir migration. O custo (validação em runtime via Zod) é pago
-uma vez no boundary.
+Os campos trigger e action são Json com um campo type — não colunas tipadas. Razão: adicionar um trigger novo em v2 não pode exigir migration. O custo (validação em runtime via Zod) é pago uma vez no boundary.
 
 ## Casos de Borda
 - Tarefa excluída antes do job rodar -> execução SKIPPED com
@@ -2581,13 +2529,13 @@ uma vez no boundary.
 **Estimativa total:** 2.5 dias
 
 ## Cobertura
-| Requisito | Tasks |
-|-----------|-------|
-| FR-001 | T1.4, T1.5 |
-| FR-002 | T1.3 |
-| FR-003 | T1.4 |
-| FR-004 | T1.2 |
-| FR-005 | T1.3 |
+| Requisito | Tasks      |
+| --------- | ---------- |
+| FR-001    | T1.4, T1.5 |
+| FR-002    | T1.3       |
+| FR-003    | T1.4       |
+| FR-004    | T1.2       |
+| FR-005    | T1.3       |
 
 ## Fase 1: Backend (1.5 dias)
 
@@ -2601,16 +2549,14 @@ uma vez no boundary.
 - [ ] create (limite de 10 na transação, FR-004), findByWorkspace,
       update, delete, toggle
 - [ ] Validação Zod dos Json de trigger/action (TD-002)
-**Verificação:** `pnpm test automation.service` — 11ª criação
-falha com 422
+**Verificação:** `pnpm test automation.service` — 11ª criação falha com 422
 
 ### T1.3: AutomationEngine
 **Estimativa:** 5h · **Dependências:** T1.1
 - [ ] findMatchingAutomations, evaluateConditions (puro, FR-005)
 - [ ] executeAction para os 5 tipos
 - [ ] canExecute + propagação de contexto (FR-002)
-**Verificação:** `pnpm test automation.engine` — inclui o teste
-da cadeia A->B->A
+**Verificação:** `pnpm test automation.engine` — inclui o teste da cadeia A->B->A
 
 ### T1.4: Fila e worker
 **Estimativa:** 2h · **Dependências:** T1.3
@@ -2623,8 +2569,7 @@ da cadeia A->B->A
 **Estimativa:** 2h · **Dependências:** T1.4
 - [ ] Job diário de task_overdue
 - [ ] Consumo dos eventos do outbox da spec 003
-**Verificação:** e2e: criar tarefa com tag "bug" -> assignee
-automático aparece via evento em tempo real
+**Verificação:** e2e: criar tarefa com tag "bug" -> assignee automático aparece via evento em tempo real
 
 ## Fase 2: Frontend (1 dia)
 
@@ -2659,9 +2604,7 @@ A última spec do MVP fecha o ciclo: ela **consome** eventos de todas as anterio
 **Status:** requirements:approved
 
 ## Visão Geral
-Notificações in-app em tempo real, com preferências por tipo e
-opção de email. Mantém usuários informados sem sobrecarregar —
-a preferência do usuário vence sempre.
+Notificações in-app em tempo real, com preferências por tipo e opção de email. Mantém usuários informados sem sobrecarregar — a preferência do usuário vence sempre.
 
 ## Fora do Escopo (v1)
 - Sem push notifications mobile/browser — v2
@@ -2693,39 +2636,32 @@ a preferência do usuário vence sempre.
 
 ## Tipos de Notificação (v1)
 
-| Tipo | Gatilho | Destinatário |
-|------|---------|--------------|
-| TASK_ASSIGNED | Tarefa atribuída | O atribuído |
-| TASK_COMPLETED | Tarefa concluída | O criador (se não for quem concluiu) |
-| TASK_DUE_SOON | Vence em 24h | Os atribuídos |
-| TASK_OVERDUE | Atrasada | Os atribuídos |
-| WORKSPACE_INVITE | Convite recebido | O convidado |
-| AUTOMATION_EXECUTED | Automação rodou | Admins (opt-in) |
+| Tipo                | Gatilho          | Destinatário |
+| ------------------- | ---------------- | ------------ |
+| TASK_ASSIGNED       | Tarefa atribuída | O atribuído |
+| TASK_COMPLETED      | Tarefa concluída | O criador (se não for quem concluiu) |
+| TASK_DUE_SOON       | Vence em 24h     | Os atribuídos |
+| TASK_OVERDUE        | Atrasada         | Os atribuídos |
+| WORKSPACE_INVITE    | Convite recebido | O convidado |
+| AUTOMATION_EXECUTED | Automação rodou  | Admins (opt-in) |
 
 ## Requisitos Funcionais (EARS)
 
 ### FR-001 (Must Have)
-QUANDO um evento notificável ocorrer, O SISTEMA DEVE criar a
-notificação e entregá-la em tempo real ao destinatário conectado
-em menos de 200ms.
+QUANDO um evento notificável ocorrer, O SISTEMA DEVE criar a notificação e entregá-la em tempo real ao destinatário conectado em menos de 200ms.
 
 ### FR-002 (Must Have)
-O SISTEMA DEVE respeitar as preferências do usuário ANTES de
-criar a notificação: tipo desabilitado não gera registro, não
-apenas o esconde.
+O SISTEMA DEVE respeitar as preferências do usuário ANTES de criar a notificação: tipo desabilitado não gera registro, não apenas o esconde.
 
 ### FR-003 (Must Have)
-O SISTEMA NÃO DEVE notificar o próprio ator ("você concluiu a
-sua tarefa" não existe).
+O SISTEMA NÃO DEVE notificar o próprio ator ("você concluiu a sua tarefa" não existe).
 
 ### FR-004 (Must Have)
 ONDE o canal email estiver habilitado para o tipo, O SISTEMA
 DEVE enviar o email de forma assíncrona (fila), nunca no request.
 
 ### FR-005 (Should Have)
-O SISTEMA DEVE agrupar notificações não lidas do mesmo tipo e
-tarefa ("3 atualizações em Deploy v2"), mantendo o detalhe no
-histórico.
+O SISTEMA DEVE agrupar notificações não lidas do mesmo tipo e tarefa ("3 atualizações em Deploy v2"), mantendo o detalhe no histórico.
 
 ## Requisitos Não Funcionais
 
@@ -2736,12 +2672,10 @@ histórico.
 ## FAQ de Implementação
 
 **P: Usuário offline recebe o quê ao reconectar?**
-R: O badge é recalculado do banco no load; o dropdown pagina do
-banco. O Socket.io é otimização, não fonte de verdade.
+R: O badge é recalculado do banco no load; o dropdown pagina do banco. O Socket.io é otimização, não fonte de verdade.
 
 **P: TASK_DUE_SOON dispara mais de uma vez para a mesma tarefa?**
-R: Não. Uma notificação por (tarefa, tipo, destinatário) por
-janela de vencimento — deduplicação no job diário.
+R: Não. Uma notificação por (tarefa, tipo, destinatário) por janela de vencimento — deduplicação no job diário.
 
 **P: Notificação de workspace do qual o usuário foi removido?**
 R: Removidas na saída (cascade lógico no evento member:removed,
@@ -2762,24 +2696,22 @@ FR-004 da spec 002).
 ```mermaid
 flowchart TB
     subgraph FONTES["Fontes de evento"]
+        direction LR
         T[Tasks]
         A[Automacoes]
         W[Workspaces]
     end
 
-    subgraph NS["NotificationService"]
-        CHECK[Checar preferencias]
-        CREATE[Criar notificacao]
-    end
+    CHECK[Checar preferencias]
+    CREATE[Criar notificacao]
 
     subgraph ENTREGA["Entrega"]
+        direction LR
         WS[Socket.io room user:id]
         EM[Fila de email]
     end
 
-    T --> CHECK
-    A --> CHECK
-    W --> CHECK
+    FONTES --> CHECK
     CHECK -->|habilitado| CREATE
     CREATE --> WS
     CREATE -.->|se email ligado| EM
@@ -2793,7 +2725,7 @@ flowchart TB
 ## Mapeamento de Requisitos
 
 | Requisito | Decisão de design |
-|-----------|-------------------|
+| --------- | ----------------- |
 | FR-001 | Room por usuário user:{id}; criação síncrona,
           entrega pós-commit |
 | FR-002 | Checagem de preferência ANTES do insert (TD-001) |
@@ -2888,15 +2820,11 @@ interface NotificationEvent {
 
 ### TD-001: preferência checada na escrita, não na leitura
 Alternativa considerada: gravar tudo e filtrar na exibição.
-Rejeitada: viola FR-002 (o usuário desabilitou; o dado não
-deveria existir), infla a tabela e complica o contador. Custo:
-mudar preferência não afeta notificações passadas — aceito e
-documentado na UI.
+Rejeitada: viola FR-002 (o usuário desabilitou; o dado não deveria existir), infla a tabela e complica o contador. Custo:
+mudar preferência não afeta notificações passadas — aceito e documentado na UI.
 
 ### TD-002: fonte de verdade é o banco, não o socket
-O evento em tempo real é uma otimização de latência. Badge e
-lista sempre se recuperam do banco (ver FAQ). Nenhuma
-notificação existe apenas "em trânsito".
+O evento em tempo real é uma otimização de latência. Badge e lista sempre se recuperam do banco (ver FAQ). Nenhuma notificação existe apenas "em trânsito".
 
 ## Estratégia de Verificação
 - Service: FR-002 (preferência off -> zero registro) e FR-003
@@ -2916,12 +2844,12 @@ notificação existe apenas "em trânsito".
 **Estimativa total:** 2 dias
 
 ## Cobertura
-| Requisito | Tasks |
-|-----------|-------|
-| FR-001 | T1.2, T1.4 |
-| FR-002, FR-003 | T1.2 |
-| FR-004 | T1.3 |
-| FR-005 | T2.1 |
+| Requisito      | Tasks      |
+| -------------- | ---------- |
+| FR-001         | T1.2, T1.4 |
+| FR-002, FR-003 | T1.2       |
+| FR-004         | T1.3       |
+| FR-005         | T2.1       |
 
 ## Fase 1: Backend (1 dia)
 
@@ -2946,8 +2874,7 @@ notificação existe apenas "em trânsito".
 ### T1.4: Integração com as fontes
 **Estimativa:** 2h · **Dependências:** T1.2
 - [ ] Hooks nos eventos das specs 002/003/004
-**Verificação:** e2e: atribuir tarefa -> badge do atribuído sobe
-em tempo real; quem atribuiu não recebe nada
+**Verificação:** e2e: atribuir tarefa -> badge do atribuído sobe em tempo real; quem atribuiu não recebe nada
 
 ## Fase 2: Frontend (1 dia)
 
@@ -2987,12 +2914,7 @@ A Anthropic também é específica sobre o que uma boa spec contém: *"as specs 
 A Anthropic publica o prompt que converte uma ideia em spec antes de existir uma linha de código:
 
 ```text
-Quero construir [descrição breve]. Me entreviste em detalhe
-usando a ferramenta AskUserQuestion. Pergunte sobre implementação
-técnica, UI/UX, casos de borda, preocupações e trade-offs. Não
-faça perguntas óbvias — cave as partes difíceis que eu talvez não
-tenha considerado. Continue entrevistando até cobrirmos tudo,
-então escreva uma spec completa em SPEC.md.
+Quero construir [descrição breve]. Me entreviste em detalhe usando a ferramenta AskUserQuestion. Pergunte sobre implementação técnica, UI/UX, casos de borda, preocupações e trade-offs. Não faça perguntas óbvias — cave as partes difíceis que eu talvez não tenha considerado. Continue entrevistando até cobrirmos tudo, então escreva uma spec completa em SPEC.md.
 ```
 
 Rode isso numa sessão limpa. O agente pressiona você sobre casos de borda que você ainda não pensou. Quando terminar, **abra outra sessão limpa para implementar** — o contexto novo mantém a implementação focada na spec, não na conversa que a produziu.
@@ -3051,16 +2973,11 @@ Uma feature concreta atravessando o pipeline: `PATCH /users/me`, para o usuário
 
 ```text
 QUANDO um usuário autenticado enviar PATCH /users/me,
-O SISTEMA DEVE validar todos os campos fornecidos antes de
-persistir qualquer mudança.
+O SISTEMA DEVE validar todos os campos fornecidos antes de persistir qualquer mudança.
 
-SE displayName for fornecido E o tamanho for menor que 2 OU
-maior que 64, O SISTEMA DEVE retornar 400 com
-"displayName deve ter de 2 a 64 caracteres".
+SE displayName for fornecido E o tamanho for menor que 2 OU maior que 64, O SISTEMA DEVE retornar 400 com "displayName deve ter de 2 a 64 caracteres".
 
-SE timezone for fornecido E não for um identificador IANA
-válido, O SISTEMA DEVE retornar 400 com
-"Identificador de timezone inválido".
+SE timezone for fornecido E não for um identificador IANA válido, O SISTEMA DEVE retornar 400 com "Identificador de timezone inválido".
 
 O SISTEMA NÃO DEVE permitir requisições não autenticadas.
 ```
@@ -3077,7 +2994,7 @@ Você revisa: bate com o PRD, sem ambiguidade. `.status` → `requirements:appro
 
 | Alegação | Comando | Veredito |
 |----------|---------|----------|
-| 401 sem token | `curl -X PATCH /users/me` | PASS |
+| 401 sem token | PATCH sem header `Authorization` | PASS |
 | 400 com displayName de 1 caractere | PATCH com `displayName=x` | PASS |
 | 400 com timezone inválido | PATCH com `timezone=badzone` | PASS |
 | 403 com conta desativada | PATCH com header de teste | PASS |
@@ -3111,8 +3028,7 @@ No Claude Code (e em agentes compatíveis, como o Pi), uma skill é um arquivo `
 ---
 name: sdd-prd
 description: 'Cria ou atualiza requirements.md para uma feature.
-  Use quando a conversa pedir definição de O QUE e POR QUÊ: user
-  stories, critérios de aceitação, EARS, NFRs e escopo negativo.
+  Use quando a conversa pedir definição de O QUE e POR QUÊ: user stories, critérios de aceitação, EARS, NFRs e escopo negativo.
   Não use para design técnico ou código.'
 ---
 
@@ -3144,16 +3060,14 @@ O conjunto completo do kit cobre o pipeline: `sdd-init` (estrutura), `sdd-steeri
 O padrão mais eficaz que conheço para SDD com agentes é dividir o trabalho entre três sub-agentes estreitos em vez de pedir tudo a um só. **Cada um tem um trabalho e uma restrição** — e a restrição é o que faz o padrão funcionar.
 
 ```mermaid
-flowchart LR
-    REQ[Requirements] --> ARC[Architect]
-    ARC --> DES[Design + Tasks]
-    DES --> IMP[Implementer]
-    IMP --> COD[Codigo + testes]
-    COD --> REV[Reviewer]
-    REV -->|gaps| IMP
+flowchart TB
+    REQ[requirements.md] --> ARC[Architect]
+    ARC -->|design + tasks| IMP[Implementer]
+    IMP -->|código + testes| REV[Reviewer]
+    REV -.->|gaps| IMP
 
     class ARC,IMP,REV accent;
-    class REQ,DES,COD neutral;
+    class REQ neutral;
 ```
 
 **Architect** — lê o PRD e todo o steering; produz `requirements.md` e `design.md`: modelos de dados, contratos de API, escolhas com justificativa e o mapa de rastreabilidade.
@@ -3270,11 +3184,8 @@ O quarto passo é onde mora a disciplina. Quando algo saía errado, o instinto �
 
 ```text
 ## Regra de precisão (MUST)
-Toda aritmética de dinheiro usa inteiros de 8 decimais
-(precisão de satoshi). Nenhum float ou double em qualquer
-ponto do caminho de precificação.
-Um float em qualquer campo de resposta é FALHA DE TESTE,
-não warning de lint.
+Toda aritmética de dinheiro usa inteiros de 8 decimais (precisão de satoshi). Nenhum float ou double em qualquer ponto do caminho de precificação.
+Um float em qualquer campo de resposta é FALHA DE TESTE, não warning de lint.
 
 ## Cadeia de fallback (fontes, em ordem)
 1. VWAP interno de trades confirmados (primária)
@@ -3391,12 +3302,22 @@ O `.status` é o gate — e sozinho, você lê o arquivo e basta. Num time, um g
 Então torne-o visível: um board onde cada coluna é uma fase do SDD. Um card é uma feature. O card se move quando o gate é aprovado — **o aprovar é o mover**.
 
 ```mermaid
-flowchart LR
-    B[Backlog] --> P[PRD em revisao]
-    P -->|PR aprovado| D[Design em revisao]
-    D -->|PR aprovado| T[Tasks em revisao]
-    T -->|tasks approved| E[Implementacao]
-    E --> R[Review]
+flowchart TB
+    B[Backlog]
+
+    subgraph SPEC["Colunas da spec: o PR aprovado move o card"]
+        direction LR
+        P[Revisão do PRD] -->|aprovado| D[Revisão do design]
+        D -->|aprovado| T[Revisão das tasks]
+    end
+
+    subgraph BUILD["Colunas de construção"]
+        direction LR
+        E[Implementação] --> R[Review]
+    end
+
+    B --> SPEC
+    SPEC -->|tasks approved| BUILD
 
     class P,D,T accent;
     class B muted;
@@ -3583,12 +3504,10 @@ SE [condição indesejada], O SISTEMA DEVE [mitigação].
 ## Requisitos Não Funcionais
 
 ### NFR-001: Performance
-O SISTEMA DEVE responder [operação] em até [X]ms no p95
-para [condição de carga].
+O SISTEMA DEVE responder [operação] em até [X]ms no p95 para [condição de carga].
 
 ### NFR-002: Segurança
-O SISTEMA DEVE [comportamento específico, ex.: "validar JWT
-assinado em toda mutação antes da lógica de negócio"].
+O SISTEMA DEVE [comportamento específico, ex.: "validar JWT assinado em toda mutação antes da lógica de negócio"].
 
 ### NFR-003: Acessibilidade
 O SISTEMA DEVE atender WCAG 2.1 AA nos componentes novos.
@@ -3622,13 +3541,12 @@ R: [Quem vê o quê, sob quais condições]
 
 ## Riscos
 
-| Risco | Probabilidade | Impacto | Mitigação |
-|-------|---------------|---------|-----------|
+| Risco   | Probabilidade    | Impacto          | Mitigação |
+| ------- | ---------------- | ---------------- | --------- |
 | [R-001] | Baixa/Média/Alta | Baixo/Médio/Alto | [ação] |
 
 ## Confirme antes de construir
-Não avance para o design até reformular os FRs nas suas
-próprias palavras. Critério ambíguo: pergunte antes.
+Não avance para o design até reformular os FRs nas suas próprias palavras. Critério ambíguo: pergunte antes.
 ```
 
 ### Template: design.md
@@ -3645,16 +3563,15 @@ próprias palavras. Critério ambíguo: pergunte antes.
 ## Mapeamento de Requisitos
 
 | Requisito | Decisão / seção do design |
-|-----------|---------------------------|
-| FR-001 | [onde e como é atendido] |
-| FR-002 | [...] |
+| --------- | ------------------------- |
+| FR-001    | [onde e como é atendido]  |
+| FR-002    | [...]                     |
 
 ## Arquitetura
 [Componentes/módulos e responsabilidades. Diagrama se ajudar.]
 
 ## Modelo de Dados
-[Schema com constraints. Regra de negócio que couber no banco
-vai no banco.]
+[Schema com constraints. Regra de negócio que couber no banco vai no banco.]
 
 ## Contrato de API
 [Endpoints, entradas, saídas, códigos de erro.]
@@ -3696,8 +3613,8 @@ vai no banco.]
 ## Cobertura
 
 | Requisito | Tasks |
-|-----------|-------|
-| FR-001 | T1.1 |
+| --------- | ----- |
+| FR-001    | T1.1  |
 
 ## Fase 1: [Nome] ([tempo])
 

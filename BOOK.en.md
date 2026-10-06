@@ -87,18 +87,20 @@ The planning hours are not overhead. They are the regeneration hours you never s
 
 ```mermaid
 flowchart TB
+    subgraph COM["With a spec"]
+        direction TB
+        S1[Approved spec] --> G2[Generate from spec]
+        G2 --> A1[Small adjustments]
+        A1 --> OK[Correct on first pass]
+    end
+
     subgraph SEM["Without a spec"]
+        direction TB
         P1[Prompt] --> G1[Generate]
         G1 --> F1[Something's missing]
         F1 --> P2[Reprompt]
         P2 --> Q1[Break something else]
         Q1 --> P1
-    end
-
-    subgraph COM["With a spec"]
-        S1[Approved spec] --> G2[Generate from spec]
-        G2 --> A1[Small adjustments]
-        A1 --> OK[Correct on first pass]
     end
 
     class P1,G1,F1,P2,Q1 muted;
@@ -187,20 +189,28 @@ The spec is the only one of these an agent executes — and the only one that ou
 
 ### 2.3 The full pipeline
 
-SDD organizes work into a pipeline of phases, with a human approval gate between each:
-
-```text
-IDEA → PLAN → REQUIREMENTS → DESIGN → TASKS → IMPLEMENTATION → REVIEW
-```
+SDD organizes work into seven phases, grouped in three stages. IDEA and PLAN shape the work before you commit to it. REQUIREMENTS, DESIGN, and TASKS write the spec, and each one ends at a human approval gate. IMPLEMENTATION and REVIEW turn the approved spec into verified code.
 
 ```mermaid
-flowchart LR
-    I[IDEA] --> P[PLAN]
-    P --> R[REQUIREMENTS]
-    R -->|gate| D[DESIGN]
-    D -->|gate| T[TASKS]
-    T -->|gate| E[IMPLEMENTATION]
-    E --> V[REVIEW]
+flowchart TB
+    subgraph SHAPE["Shape the work (optional)"]
+        direction LR
+        I[IDEA] --> P[PLAN]
+    end
+
+    subgraph SPEC["Write the spec"]
+        direction LR
+        R[REQUIREMENTS] -->|gate| D[DESIGN]
+        D -->|gate| T[TASKS]
+    end
+
+    subgraph CODE["Build and verify"]
+        direction LR
+        E[IMPLEMENTATION] --> V[REVIEW]
+    end
+
+    SHAPE --> SPEC
+    SPEC -->|gate| CODE
 
     class I,P muted;
     class R,D,T neutral;
@@ -316,46 +326,65 @@ Before you write any spec, it needs a place to live. The structure below is the 
 
 ```text
 .ai/
-  steering/                    # reusable project context (durable memory)
-    product.md                 # product vision, users, what it is NOT
-    tech-stack.md              # stack, versions, and the reason for each
-    conventions.md             # code standards, naming, error shape
-    principles.md              # non-negotiable architectural rules
+  steering/               # reusable project context
+    product.md            # vision, users, what it is NOT
+    tech-stack.md         # stack, versions, why each
+    conventions.md        # code style, naming, errors
+    principles.md         # non-negotiable rules
   sdd/
-    INDEX.md                   # spec dashboard (not the source of truth)
-    PLAN.md                    # product plan (optional small, recommended medium)
+    INDEX.md              # spec dashboard (not truth)
+    PLAN.md               # product plan (optional)
     ideas/
-      001-explored-idea.md     # exploration before commitment
+      001-explored-idea.md
     specs/
       001-feature-name/
-        .status                # the gate: one line, single source of truth
-        requirements.md        # WHAT — product contract
-        design.md              # HOW — technical contract
-        tasks.md               # HOW MUCH — implementation plan
-        review.md              # verification with evidence
-        decisions.md           # lightweight decision log (optional)
+        .status           # the gate: single source
+        requirements.md   # WHAT: product contract
+        design.md         # HOW: technical contract
+        tasks.md          # HOW MUCH: the plan
+        review.md         # verification with evidence
+        decisions.md      # decision log (optional)
 ```
 
 ```mermaid
-graph TD
-    ROOT[Project] --> AI[.ai/]
-    ROOT --> CM[CLAUDE.md / AGENTS.md]
+---
+config:
+  flowchart:
+    rankSpacing: 28
+---
+flowchart TB
+    ROOT[Project] --> CM[CLAUDE.md / AGENTS.md]
+    ROOT --> AI[.ai/]
     AI --> ST[steering/]
-    AI --> SDD[sdd/]
-    ST --> S1[product.md]
-    ST --> S2[tech-stack.md]
-    ST --> S3[conventions.md]
-    ST --> S4[principles.md]
-    SDD --> SP[specs/001-feature/]
-    SP --> R[requirements.md]
-    SP --> D[design.md]
-    SP --> T[tasks.md]
-    SP --> STAT[.status]
+    AI --> SP[sdd/specs/001-feature/]
+
+    subgraph GLOBAL["True for the whole project"]
+        direction TB
+        S1[product.md]
+        S2[tech-stack.md]
+        S3[conventions.md]
+        S4[principles.md]
+        S1 ~~~ S3
+        S2 ~~~ S4
+    end
+
+    subgraph FEATURE["True for one feature"]
+        direction TB
+        STAT[.status]
+        R[requirements.md]
+        D[design.md]
+        T[tasks.md]
+        STAT ~~~ D
+        R ~~~ T
+    end
+
+    ST --> GLOBAL
+    SP --> FEATURE
 
     class STAT accent;
     class R,D,T soft;
     class S1,S2,S3,S4 neutral;
-    class ROOT,AI,ST,SDD,SP,CM muted;
+    class ROOT,AI,ST,SP,CM muted;
 ```
 
 Two principles hold this tree up:
@@ -439,19 +468,40 @@ review:done
 ```
 
 ```mermaid
-stateDiagram-v2
-    [*] --> requirements_draft
-    requirements_draft --> requirements_approved: human approval
-    requirements_approved --> design_draft
-    design_draft --> design_approved: human approval
-    design_approved --> tasks_draft
-    tasks_draft --> tasks_approved: human approval
-    tasks_approved --> implementation_in_progress
-    implementation_in_progress --> implementation_done
-    implementation_done --> review_done
-    review_done --> [*]
+---
+config:
+  flowchart:
+    rankSpacing: 26
+---
+flowchart TB
+    subgraph REQ["requirements"]
+        direction LR
+        RD[draft] -->|human approval| RA[approved]
+    end
+    subgraph DES["design"]
+        direction LR
+        DD[draft] -->|human approval| DA[approved]
+    end
+    subgraph TSK["tasks"]
+        direction LR
+        TD[draft] -->|human approval| TA[approved]
+    end
+    subgraph IMP["implementation"]
+        direction LR
+        IP[in-progress] --> ID[done]
+    end
+    subgraph REV["review"]
+        direction LR
+        RV[done]
+    end
 
-    class requirements_approved,design_approved,tasks_approved accent
+    REQ --> DES
+    DES --> TSK
+    TSK --> IMP
+    IMP --> REV
+
+    class RA,DA,TA accent;
+    class RD,DD,TD,IP,ID,RV neutral;
 ```
 
 The rules that make the gate real, not decorative:
@@ -599,21 +649,16 @@ A: Cascade delete. Explicit confirmation first:
 "This will also delete 3 subtasks. Continue?"
 
 **Q: Who can see unassigned tasks?**
-A: All members of the workspace, regardless of role. Only owners
-can assign tasks to others.
+A: All members of the workspace, regardless of role. Only owners can assign tasks to others.
 
-**Q: What happens if an assignee is removed from a workspace while
-they have open tasks?**
-A: Tasks remain open with a null assignee. The workspace owner
-gets a notification listing the affected tasks.
+**Q: What happens if an assignee is removed from a workspace while they have open tasks?**
+A: Tasks remain open with a null assignee. The workspace owner gets a notification listing the affected tasks.
 
 **Q: Can a task belong to more than one project?**
-A: No. One task belongs to exactly one project. A v1 constraint,
-not a decision to revisit.
+A: No. One task belongs to exactly one project. A v1 constraint, not a decision to revisit.
 
 **Q: What timezone for due dates?**
-A: Store UTC; display in the user's profile timezone; "today"
-and "overdue" computed in the user's timezone.
+A: Store UTC; display in the user's profile timezone; "today" and "overdue" computed in the user's timezone.
 ```
 
 The entries you most need are the ones off the happy path: deletions with cascades, conflicting states, removed users, timezones, concurrent edits. Those are exactly the cases agents handle worst when left to guess — the training data is saturated with happy-path implementations and nearly empty on edge cases.
@@ -631,8 +676,7 @@ The best way to see the techniques combined is a genuinely hard case. This spec 
 # Status: requirements:approved
 
 ## Overview
-A merchant creates a charge against a customer. This moves money,
-so it must be safe to retry and impossible to double-bill.
+A merchant creates a charge against a customer. This moves money, so it must be safe to retry and impossible to double-bill.
 
 ## In scope
 - Create a charge from an authenticated merchant request.
@@ -649,8 +693,7 @@ so it must be safe to retry and impossible to double-bill.
 - FR-1  WHEN a merchant POSTs a charge with a valid Idempotency-Key,
         THE SYSTEM SHALL create at most one charge for that key.
 - FR-2  WHEN the same Idempotency-Key is replayed within 24h,
-        THE SYSTEM SHALL return the original charge and create no
-        new one.
+        THE SYSTEM SHALL return the original charge and create no new one.
 - FR-3  IF the amount is <= 0,
         THE SYSTEM SHALL reject with 422 "amount must be positive".
 - FR-4  IF the merchant is over its rate limit,
@@ -680,9 +723,7 @@ so it must be safe to retry and impossible to double-bill.
 - Load test holds p95 < 300ms at 200 rps.
 
 ## Confirm before building
-Do not write code until you restate FR-1 through FR-5 and the
-uniqueness constraint in your own words. If any acceptance
-criterion is ambiguous, ask before implementing.
+Do not write code until you restate FR-1 through FR-5 and the uniqueness constraint in your own words. If any acceptance criterion is ambiguous, ask before implementing.
 ```
 
 Read what each part does:
@@ -740,9 +781,7 @@ This chapter sets the stage: the steering files and the product plan — the dur
 # TaskFlow Pro — Product Vision
 
 ## Value Proposition
-TaskFlow Pro is a collaborative task-management system that lets
-teams organize work in dedicated workspaces, with automations and
-real-time synchronization.
+TaskFlow Pro is a collaborative task-management system that lets teams organize work in dedicated workspaces, with automations and real-time synchronization.
 
 ## The Problem We Solve
 1. Teams need spaces organized by project/client
@@ -807,17 +846,17 @@ flowchart TB
         end
         subgraph PKGS["packages/"]
             UI["ui - shadcn/ui"]
+            RT["realtime - Socket.io types"]
             DB["database - Prisma"]
             EMAIL["email - React Email"]
-            RT["realtime - Socket.io types"]
         end
     end
 
     WEB --> UI
-    API --> DB
-    API --> EMAIL
     WEB --> RT
     API --> RT
+    API --> DB
+    API --> EMAIL
 
     class WEB,API accent;
     class UI,DB,EMAIL,RT neutral;
@@ -833,10 +872,8 @@ flowchart TB
 - **Forms:** React Hook Form + Zod
 - **Real-time:** Socket.io client
 
-**Why:** App Router with React Server Components is the platform
-default; the React Compiler eliminates manual memoization;
-shadcn/ui gives accessible components with no lock-in — the code
-is yours.
+**Why:** App Router with React Server Components is the platform default; the React Compiler eliminates manual memoization;
+shadcn/ui gives accessible components with no lock-in — the code is yours.
 
 ### apps/api (Backend)
 - **Framework:** Fastify 5
@@ -846,34 +883,24 @@ is yours.
 - **Real-time:** Socket.io server
 - **Queues:** BullMQ + Redis
 
-**Why:** Fastify is 2-3x faster than Express, with built-in
-schema validation and end-to-end typing via type providers.
+**Why:** Fastify is 2-3x faster than Express, with built-in schema validation and end-to-end typing via type providers.
 
 ## Versions (majors)
 
-next ^16 · react ^19 · fastify ^5 · prisma ^7 · zod ^4
-socket.io ^4 · bullmq ^5 · @tanstack/react-query ^5
+next ^16 · react ^19 · fastify ^5 · prisma ^7 · zod ^4 socket.io ^4 · bullmq ^5 · @tanstack/react-query ^5
 
-The exact versions live in package.json and change; the REASONS
-above do not. When you bump a major, update this file with what
-changed that is relevant to decisions (e.g. "Next 16: Turbopack
-is the default, explicit caching via 'use cache'"; "Prisma 7: the
-datasource URL moved to prisma.config.ts, ESM-first Client").
+The exact versions live in package.json and change; the REASONS above do not. When you bump a major, update this file with what changed that is relevant to decisions (e.g. "Next 16: Turbopack is the default, explicit caching via 'use cache'"; "Prisma 7: the datasource URL moved to prisma.config.ts, ESM-first Client").
 
 ## Architectural Decisions
 
 ### Why Turborepo?
-Smart caching across builds; workspace dependencies make
-cross-app refactoring safe; task orchestration for CI.
+Smart caching across builds; workspace dependencies make cross-app refactoring safe; task orchestration for CI.
 
 ### Why PostgreSQL?
-Relational data with referential integrity (workspace -> task ->
-subtask) and uniqueness constraints that enforce business rules
-in the database, not the application.
+Relational data with referential integrity (workspace -> task -> subtask) and uniqueness constraints that enforce business rules in the database, not the application.
 
 ### Why Socket.io over raw WebSocket?
-Automatic fallback, per-workspace rooms (they map 1:1 to our
-permission model), automatic reconnection.
+Automatic fallback, per-workspace rooms (they map 1:1 to our permission model), automatic reconnection.
 
 ### Why BullMQ for automations?
 Automatic retry with backoff, delayed jobs, rate limiting.
@@ -924,8 +951,7 @@ Note the pattern: **every choice carries its reason.** "PostgreSQL because uniqu
 # Principles — TaskFlow Pro
 
 1. NEVER expose one workspace's data to another. Every resource
-   query filters by workspace_id — no exceptions, including joins
-   and aggregations.
+   query filters by workspace_id — no exceptions, including joins and aggregations.
 2. Verify permission on the server, always, before business logic.
    The client is a hint, not an authority.
 3. Operations that touch more than one table use a transaction.
@@ -1001,9 +1027,7 @@ The project's first spec is the foundation of every other one: with no authentic
 **Coverage:** US-001..US-004, FR-001..FR-008, NFR-001..NFR-002
 
 ## Overview
-Authentication for TaskFlow Pro, with email/password and magic
-links. It moves credentials and sessions — the spec treats
-security as a requirement, not an implementation detail.
+Authentication for TaskFlow Pro, with email/password and magic links. It moves credentials and sessions — the spec treats security as a requirement, not an implementation detail.
 
 ## Out of Scope (v1)
 - No social OAuth (Google/GitHub) — v2, needs a privacy review
@@ -1062,35 +1086,26 @@ security as a requirement, not an implementation detail.
 THE SYSTEM SHALL store passwords with bcrypt, cost factor 12.
 
 ### FR-002 (Must Have) — US-002
-THE SYSTEM SHALL issue an access JWT expiring in 1 hour and a
-refresh token expiring in 7 days (30 days with "remember me").
+THE SYSTEM SHALL issue an access JWT expiring in 1 hour and a refresh token expiring in 7 days (30 days with "remember me").
 
 ### FR-003 (Must Have) — US-004
-WHEN the password is changed, THE SYSTEM SHALL invalidate all of
-the user's refresh tokens.
+WHEN the password is changed, THE SYSTEM SHALL invalidate all of the user's refresh tokens.
 
 ### FR-004 (Must Have) — US-002
 IF there are 5 failed login attempts for the same email,
-THE SYSTEM SHALL block further attempts for 15 minutes and
-respond 429 with Retry-After.
+THE SYSTEM SHALL block further attempts for 15 minutes and respond 429 with Retry-After.
 
 ### FR-005 (Must Have) — US-003
-WHEN a magic link is used, THE SYSTEM SHALL mark it consumed and
-reject reuse with 401 "Link expired or already used".
+WHEN a magic link is used, THE SYSTEM SHALL mark it consumed and reject reuse with 401 "Link expired or already used".
 
 ### FR-006 (Must Have) — US-001
-WHILE the email is unverified, THE SYSTEM SHALL NOT allow
-password login (respond 403 with an instruction to resend
-verification).
+WHILE the email is unverified, THE SYSTEM SHALL NOT allow password login (respond 403 with an instruction to resend verification).
 
 ### FR-007 (Should Have)
-THE SYSTEM SHALL log every login attempt (success and failure)
-with IP and user-agent, for auditing.
+THE SYSTEM SHALL log every login attempt (success and failure) with IP and user-agent, for auditing.
 
 ### FR-008 (Must Have)
-THE SYSTEM SHALL respond to password recovery with the same
-message whether or not the account exists ("Email sent if the
-account exists") — no user enumeration.
+THE SYSTEM SHALL respond to password recovery with the same message whether or not the account exists ("Email sent if the account exists") — no user enumeration.
 
 ## Non-Functional Requirements
 
@@ -1107,19 +1122,13 @@ account exists") — no user enumeration.
 ## Implementation FAQ
 
 **Q: Sign up with an already-registered email — what responds?**
-A: 200 with the same success message ("Check your email") and a
-notice email to the account owner. No enumeration (FR-008 applies
-to sign up too).
+A: 200 with the same success message ("Check your email") and a notice email to the account owner. No enumeration (FR-008 applies to sign up too).
 
 **Q: Magic link for an email with no account?**
-A: Create the account on first use of the link (name empty,
-requested during onboarding). Decision D-001: reducing friction
-beats a full form.
+A: Create the account on first use of the link (name empty, requested during onboarding). Decision D-001: reducing friction beats a full form.
 
 **Q: Is the refresh token rotated?**
-A: Yes. Each refresh issues a new pair and invalidates the old
-one. Reuse of an old refresh = possible theft: invalidate the
-whole session and require a new login.
+A: Yes. Each refresh issues a new pair and invalidates the old one. Reuse of an old refresh = possible theft: invalidate the whole session and require a new login.
 ```
 
 Three things to note before the design. First, **FR-008 exists because of the FAQ**: the question "what responds when the email already exists?" forced the anti-enumeration decision, which became a requirement. Second, the FRs reference the user stories they cover — the cheap traceability that pays off at the tasks phase. Third, the negative scope has reasons ("needs a privacy review") — a line that stops the agent from "adding OAuth while it's here."
@@ -1139,42 +1148,37 @@ The main flow:
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant F as Frontend
+    participant W as Web app
     participant A as API
-    participant D as Database
     participant E as Email
+    participant D as Database
 
-    Note over U,E: Sign up
-    U->>F: Fill the form
-    F->>A: POST /auth/register
+    Note over W,D: Sign up
+    W->>A: POST /auth/register
     A->>D: Create user (unverified)
-    A->>E: Verification email (queued)
-    A->>F: 201 Created
-    F->>U: "Check your email"
+    A->>E: Verification email
+    A-->>W: 201 Created
 
-    Note over U,E: Login
-    U->>F: Email + password
-    F->>A: POST /auth/login
-    A->>D: Check credentials + rate limit
-    A->>D: Create session (refresh token)
-    A->>F: accessToken + refresh cookie
-    F->>U: Redirect to workspace
+    Note over W,D: Login
+    W->>A: POST /auth/login
+    A->>D: Check credentials
+    A->>D: Create session
+    A-->>W: Access token + cookie
 ```
 
 ```markdown
 ## Requirements Mapping
 
 | Requirement | Design decision |
-|-------------|-----------------|
-| FR-001 | bcrypt cost 12 in AuthService.hashPassword (TD-001) |
-| FR-002 | Signed JWT + Session table for refresh (TD-002) |
-| FR-003 | deleteMany(sessions) on password change |
-| FR-004 | Per-email rate limiter in Redis (TD-003) |
-| FR-005 | MagicLink.usedAt + atomic verification |
-| FR-006 | emailVerified check before comparing password |
-| FR-007 | LoginAttempt table, async write |
-| FR-008 | Identical responses in the email flows |
+| ----------- | --------------- |
+| FR-001      | bcrypt cost 12 in AuthService.hashPassword (TD-001) |
+| FR-002      | Signed JWT + Session table for refresh (TD-002) |
+| FR-003      | deleteMany(sessions) on password change |
+| FR-004      | Per-email rate limiter in Redis (TD-003) |
+| FR-005      | MagicLink.usedAt + atomic verification |
+| FR-006      | emailVerified check before comparing password |
+| FR-007      | LoginAttempt table, async write |
+| FR-008      | Identical responses in the email flows |
 
 ## Data Model
 
@@ -1263,15 +1267,11 @@ GET  /api/v1/auth/me                Bearer -> 200 { user }
 ## Technical Decisions
 
 ### TD-001: bcrypt, not argon2
-Argon2 is technically superior, but bcrypt cost 12 meets this
-product's threat model and has trivial ecosystem support in Node.
+Argon2 is technically superior, but bcrypt cost 12 meets this product's threat model and has trivial ecosystem support in Node.
 Revisit if the product becomes a high-value target.
 
 ### TD-002: refresh token in a table, not in the JWT
-Refresh in the database allows immediate revocation (FR-003) and
-rotation with reuse detection. A raw JWT cannot revoke. The cost
-(one query per refresh) is acceptable: refresh happens ~1x/hour
-per user.
+Refresh in the database allows immediate revocation (FR-003) and rotation with reuse detection. A raw JWT cannot revoke. The cost (one query per refresh) is acceptable: refresh happens ~1x/hour per user.
 
 ### TD-003: rate limit in Redis
 The counter must survive a restart and hold across API instances.
@@ -1307,14 +1307,14 @@ The **requirements mapping** table is the most important section of the design �
 - [x] FAQ has no open questions
 
 ## Coverage
-| Requirement | Tasks |
-|-------------|-------|
-| FR-001, FR-002 | T2.1 |
-| FR-003 | T2.1, T2.2 |
-| FR-004 | T2.2 |
-| FR-005, FR-006 | T2.1 |
-| FR-007 | T2.2 |
-| FR-008 | T2.2, T3.2 |
+| Requirement    | Tasks      |
+| -------------- | ---------- |
+| FR-001, FR-002 | T2.1       |
+| FR-003         | T2.1, T2.2 |
+| FR-004         | T2.2       |
+| FR-005, FR-006 | T2.1       |
+| FR-007         | T2.2       |
+| FR-008         | T2.2, T3.2 |
 
 ## Phase 1: Models and infrastructure (0.5 day)
 
@@ -1385,8 +1385,7 @@ Workspaces are the heart of TaskFlow Pro's security model: **everything** in the
 
 ## Overview
 Workspaces are isolated spaces where teams collaborate on tasks.
-Each workspace has its own members, tasks, and settings. Isolation
-between workspaces is the product's central security rule.
+Each workspace has its own members, tasks, and settings. Isolation between workspaces is the product's central security rule.
 
 ## Out of Scope (v1)
 - No nested workspaces or "organizations" above workspaces
@@ -1440,9 +1439,7 @@ between workspaces is the product's central security rule.
 ## Functional Requirements (EARS)
 
 ### FR-001 (Must Have)
-THE SYSTEM SHALL fully isolate data between workspaces: every
-resource query filters by workspace_id, including joins,
-aggregations, and real-time events.
+THE SYSTEM SHALL fully isolate data between workspaces: every resource query filters by workspace_id, including joins, aggregations, and real-time events.
 
 ### FR-002 (Must Have)
 THE SYSTEM SHALL verify the user's permission in the workspace
@@ -1453,42 +1450,35 @@ WHILE a workspace exists, THE SYSTEM SHALL keep at least one
 ADMIN: the last admin cannot be removed, demoted, or leave.
 
 ### FR-004 (Must Have)
-WHEN a member is removed or leaves, THE SYSTEM SHALL revoke
-access immediately and disconnect them from the workspace's
-real-time rooms.
+WHEN a member is removed or leaves, THE SYSTEM SHALL revoke access immediately and disconnect them from the workspace's real-time rooms.
 
 ### FR-005 (Should Have)
-THE SYSTEM SHALL allow ownership transfer: promote another member
-to ADMIN and, optionally, demote yourself afterward.
+THE SYSTEM SHALL allow ownership transfer: promote another member to ADMIN and, optionally, demote yourself afterward.
 
 ### FR-006 (Must Have)
 IF an invite is accepted after it expires (7 days),
-THE SYSTEM SHALL respond 410 "Invite expired" and offer to
-request a new one.
+THE SYSTEM SHALL respond 410 "Invite expired" and offer to request a new one.
 
 ## Roles and Permissions
 
-| Action | ADMIN | MEMBER |
-|--------|-------|--------|
-| Create tasks | yes | yes |
-| Edit/delete any task | yes | only their own |
-| Invite/remove members | yes | no |
-| Edit/delete workspace | yes | no |
+| Action                | ADMIN | MEMBER         |
+| --------------------- | ----- | -------------- |
+| Create tasks          | yes   | yes            |
+| Edit/delete any task  | yes   | only their own |
+| Invite/remove members | yes   | no             |
+| Edit/delete workspace | yes   | no             |
 
 ## Implementation FAQ
 
 **Q: Invite for an email that has no account yet?**
-A: Acceptance runs through sign-up (or magic link) and then
-consumes the invite. The invite references the email, not a userId.
+A: Acceptance runs through sign-up (or magic link) and then consumes the invite. The invite references the email, not a userId.
 
 **Q: What happens to tasks when a workspace is deleted?**
-A: Cascade delete everything (tasks, tags, invites, members),
-with double confirmation in the UI ("type the workspace name").
+A: Cascade delete everything (tasks, tags, invites, members), with double confirmation in the UI ("type the workspace name").
 No trash in the MVP — decision D-001, recorded with the risk.
 
 **Q: How many workspaces can a user belong to?**
-A: No limit in the MVP. Scale NFR: up to 100 members per
-workspace, up to 50 workspaces per user with no degradation.
+A: No limit in the MVP. Scale NFR: up to 100 members per workspace, up to 50 workspaces per user with no degradation.
 ```
 
 ### 7.2 Design
@@ -1507,8 +1497,8 @@ erDiagram
     USER ||--o{ WORKSPACE_MEMBER : "belongs to"
     WORKSPACE ||--o{ WORKSPACE_MEMBER : "has"
     WORKSPACE ||--o{ WORKSPACE_INVITE : "has"
-    WORKSPACE ||--o{ TASK : "contains"
-    WORKSPACE ||--o{ TAG : "defines"
+    TASK }o--|| WORKSPACE : "lives in"
+    TAG }o--|| WORKSPACE : "lives in"
 
     USER {
         string id PK
@@ -1537,7 +1527,7 @@ erDiagram
 ## Requirements Mapping
 
 | Requirement | Design decision |
-|-------------|-----------------|
+| ----------- | --------------- |
 | FR-001 | workspace_id on every child table; mandatory query
           helper (TD-001) |
 | FR-002 | checkWorkspaceAccess as a route preHandler (TD-002) |
@@ -1613,8 +1603,7 @@ enum WorkspaceRole {
 ```markdown
 
 Note: @@unique([workspaceId, email]) prevents duplicate invites
-for the same email — a business rule in the database, as
-principles.md demands.
+for the same email — a business rule in the database, as principles.md demands.
 
 ## API
 
@@ -1642,16 +1631,13 @@ POST   /api/v1/invites/:token/accept         -> 200 { workspace }
 ## Technical Decisions
 
 ### TD-001: query helper with mandatory workspace_id
-Every access to workspace resources goes through a helper that
-requires a typed workspaceId parameter. Direct Prisma queries for
-workspace resources are banned by convention + a lint rule.
+Every access to workspace resources goes through a helper that requires a typed workspaceId parameter. Direct Prisma queries for workspace resources are banned by convention + a lint rule.
 Considered alternative: Postgres RLS — stronger, but more opaque
 for debugging; noted for when there is regulated sensitive data.
 
 ### TD-002: permission as a preHandler
 checkWorkspaceAccess(userId, workspaceId, requiredRole?) runs as a
-Fastify preHandler on every workspace route — before the body is
-processed. No handler re-implements the check.
+Fastify preHandler on every workspace route — before the body is processed. No handler re-implements the check.
 
 ## Permission Check (contract)
 
@@ -1702,14 +1688,14 @@ async function checkWorkspaceAccess(
 **Total estimate:** 3 days
 
 ## Coverage
-| Requirement | Tasks |
-|-------------|-------|
-| FR-001 | T1.2, T1.4 |
-| FR-002 | T1.4 |
-| FR-003 | T1.2, T1.3 |
-| FR-004 | T1.3 (event; consumed in spec 005) |
-| FR-005 | T1.3 |
-| FR-006 | T1.3 |
+| Requirement | Tasks                              |
+| ----------- | ---------------------------------- |
+| FR-001      | T1.2, T1.4                         |
+| FR-002      | T1.4                               |
+| FR-003      | T1.2, T1.3                         |
+| FR-004      | T1.3 (event; consumed in spec 005) |
+| FR-005      | T1.3                               |
+| FR-006      | T1.3                               |
 
 ## Phase 1: Backend (1.5 days)
 
@@ -1735,15 +1721,13 @@ async function checkWorkspaceAccess(
 - [ ] updateRole / remove / leave — all validating FR-003 in a
       transaction
 - [ ] member:removed event (FR-004)
-**Verification:** `pnpm test member.service` — last-admin edge
-cases covered
+**Verification:** `pnpm test member.service` — last-admin edge cases covered
 
 ### T1.4: Routes + preHandler
 **Estimate:** 3h · **Dependencies:** T1.2, T1.3
 - [ ] All endpoints with Zod schemas
 - [ ] checkWorkspaceAccess as a preHandler (TD-002)
-**Verification:** route test: 403 for a non-member on ALL
-workspace routes
+**Verification:** route test: 403 for a non-member on ALL workspace routes
 
 ## Phase 2: Frontend (1.5 days)
 
@@ -1761,8 +1745,7 @@ workspace routes
 **Estimate:** 4h · **Dependencies:** T2.1
 - [ ] Settings page; member management
 - [ ] Invite modal; error states (last admin, expired)
-**Verification:** Playwright: invite -> accept -> demote -> block
-last admin
+**Verification:** Playwright: invite -> accept -> demote -> block last admin
 ```
 
 The isolation suite in T1.2 deserves a sentence: it is FR-001 turned into a permanent test. In a multi-tenant system, that is the test you want to watch break **before** the commit — not in support, with one customer reading another's data.
@@ -1783,10 +1766,7 @@ The core of the product — and the densest spec in the book. It exercises every
 **Status:** requirements:approved
 
 ## Overview
-A complete task system with subtasks, tags, due dates, multiple
-assignees, and real-time updates. Tasks are the core of the
-product: automations (004) and notifications (005) react to the
-events defined here.
+A complete task system with subtasks, tags, due dates, multiple assignees, and real-time updates. Tasks are the core of the product: automations (004) and notifications (005) react to the events defined here.
 
 ## Out of Scope (v1)
 - No recurring tasks
@@ -1851,21 +1831,17 @@ events defined here.
 ## Functional Requirements (EARS)
 
 ### FR-001 (Must Have)
-THE SYSTEM SHALL validate workspace permission before any task
-operation (inherits FR-002 from spec 002).
+THE SYSTEM SHALL validate workspace permission before any task operation (inherits FR-002 from spec 002).
 
 ### FR-002 (Must Have)
-WHEN a task is created, changed, or deleted, THE SYSTEM SHALL emit
-the corresponding event to the workspace room in under 200ms.
+WHEN a task is created, changed, or deleted, THE SYSTEM SHALL emit the corresponding event to the workspace room in under 200ms.
 
 ### FR-003 (Must Have)
-WHEN any task field changes, THE SYSTEM SHALL record the change in
-the audit log (actor, field, old value, new value, timestamp).
+WHEN any task field changes, THE SYSTEM SHALL record the change in the audit log (actor, field, old value, new value, timestamp).
 
 ### FR-004 (Must Have)
 IF a MEMBER tries to edit or delete someone else's task,
-THE SYSTEM SHALL respond 403 "Only the creator or an admin can
-change this task".
+THE SYSTEM SHALL respond 403 "Only the creator or an admin can change this task".
 
 ### FR-005 (Must Have)
 IF the 51st subtask is created,
@@ -1873,16 +1849,13 @@ THE SYSTEM SHALL reject with 422 "Subtask limit of 50 reached".
 
 ### FR-006 (Must Have)
 WHEN a task is completed AND an automation is configured,
-THE SYSTEM SHALL enqueue the automation BEFORE confirming the
-response to the client (contract with spec 004).
+THE SYSTEM SHALL enqueue the automation BEFORE confirming the response to the client (contract with spec 004).
 
 ### FR-007 (Should Have)
-THE SYSTEM SHALL support drag-and-drop reordering with persisted
-position.
+THE SYSTEM SHALL support drag-and-drop reordering with persisted position.
 
 ### FR-008 (Could Have)
-WHERE a workspace has more than 1,000 active tasks, THE SYSTEM MAY
-paginate the list with a cursor instead of an offset.
+WHERE a workspace has more than 1,000 active tasks, THE SYSTEM MAY paginate the list with a cursor instead of an offset.
 
 ## Non-Functional Requirements
 
@@ -1900,22 +1873,17 @@ paginate the list with a cursor instead of an offset.
 A: Cascade, with confirmation: "This will also delete N subtasks."
 
 **Q: Assignee removed from the workspace?**
-A: Tasks become unassigned; the owner is notified (rule inherited
-from spec 002, US-004).
+A: Tasks become unassigned; the owner is notified (rule inherited from spec 002, US-004).
 
 **Q: Complete a task with open subtasks?**
-A: Allowed, with a UI warning ("2 open subtasks"). The parent
-task is not blocked by subtasks — decision D-003: the product
-does not impose process on the team.
+A: Allowed, with a UI warning ("2 open subtasks"). The parent task is not blocked by subtasks — decision D-003: the product does not impose process on the team.
 
 **Q: Concurrent edits (two members, same task)?**
-A: Last-write-wins per field + a task:updated event corrects the
-other's UI. No optimistic locking in the MVP — recorded as risk
+A: Last-write-wins per field + a task:updated event corrects the other's UI. No optimistic locking in the MVP — recorded as risk
 R-001 with a review trigger (overwrite complaints).
 
 **Q: Timezone for due dates?**
-A: Store UTC; display in the profile timezone; "today" and
-"overdue" computed in the user's timezone.
+A: Store UTC; display in the profile timezone; "today" and "overdue" computed in the user's timezone.
 ```
 
 ### 8.2 Design
@@ -1933,32 +1901,36 @@ A task's lifecycle:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> TODO: create
-    TODO --> IN_PROGRESS: start
-    TODO --> DONE: complete
-    IN_PROGRESS --> TODO: pause
-    IN_PROGRESS --> DONE: complete
-    DONE --> TODO: reopen
-    TODO --> ARCHIVED: archive
-    IN_PROGRESS --> ARCHIVED: archive
-    DONE --> ARCHIVED: archive
-    ARCHIVED --> TODO: restore
-    DONE --> [*]
+    [*] --> Active: create
+    state Active {
+        direction LR
+        [*] --> TODO
+        TODO --> IN_PROGRESS: start
+        IN_PROGRESS --> TODO: pause
+        IN_PROGRESS --> DONE: complete
+        TODO --> DONE: complete
+        DONE --> TODO: reopen
+    }
+    Active --> ARCHIVED: archive
+    ARCHIVED --> Active: restore
+
+    class DONE accent
+    class ARCHIVED muted
 ```
 
 ```markdown
 ## Requirements Mapping
 
 | Requirement | Design decision |
-|-------------|-----------------|
-| FR-001 | preHandler from spec 002 on all routes |
-| FR-002 | Emit in the service, post-commit (TD-001) |
-| FR-003 | TaskActivity + logActivity in the service (TD-002) |
-| FR-004 | creator-or-admin check in the service |
-| FR-005 | Count inside the subtask-creation transaction |
-| FR-006 | BullMQ job enqueued in the same transaction (TD-003) |
-| FR-007 | position field + reorder endpoint |
-| FR-008 | Cursor pagination in findAll |
+| ----------- | --------------- |
+| FR-001      | preHandler from spec 002 on all routes |
+| FR-002      | Emit in the service, post-commit (TD-001) |
+| FR-003      | TaskActivity + logActivity in the service (TD-002) |
+| FR-004      | creator-or-admin check in the service |
+| FR-005      | Count inside the subtask-creation transaction |
+| FR-006      | BullMQ job enqueued in the same transaction (TD-003) |
+| FR-007      | position field + reorder endpoint |
+| FR-008      | Cursor pagination in findAll |
 
 ## Data Model
 
@@ -2102,20 +2074,16 @@ interface TaskEvents {
 ## Technical Decisions
 
 ### TD-001: events emitted post-commit
-The event goes out AFTER the transaction commits. Emitting before
-creates the worst class of real-time bug: a UI showing state the
-database rejected. Cost: a few ms of extra latency. Accepted.
+The event goes out AFTER the transaction commits. Emitting before creates the worst class of real-time bug: a UI showing state the database rejected. Cost: a few ms of extra latency. Accepted.
 
 ### TD-002: audit log synchronous, in the same transaction
 Considered alternative: async log via a queue (faster). Rejected:
-FR-003 is an audit requirement; a log that can be lost audits
-nothing. The insert is cheap (one indexed row).
+FR-003 is an audit requirement; a log that can be lost audits nothing. The insert is cheap (one indexed row).
 
 ### TD-003: automation enqueued in the transaction (simple outbox)
 The BullMQ job for FR-006 is recorded in an outbox table in the
 SAME transaction as completion; a worker publishes to the queue.
-This guarantees "task completed without automation fired" cannot
-exist.
+This guarantees "task completed without automation fired" cannot exist.
 
 ## Edge Cases
 - Complete an already-completed task -> idempotent, 200, no new event
@@ -2144,16 +2112,16 @@ exist.
 **Total estimate:** 5 days
 
 ## Coverage
-| Requirement | Tasks |
-|-------------|-------|
-| FR-001 | T2.5 |
-| FR-002 | T3.1, T3.2 |
-| FR-003 | T2.4 |
-| FR-004 | T2.1, T2.5 |
-| FR-005 | T2.2 |
-| FR-006 | T2.1 (outbox; consumed in spec 004) |
-| FR-007 | T2.1, T4.5 |
-| FR-008 | T2.1 |
+| Requirement | Tasks                               |
+| ----------- | ----------------------------------- |
+| FR-001      | T2.5                                |
+| FR-002      | T3.1, T3.2                          |
+| FR-003      | T2.4                                |
+| FR-004      | T2.1, T2.5                          |
+| FR-005      | T2.2                                |
+| FR-006      | T2.1 (outbox; consumed in spec 004) |
+| FR-007      | T2.1, T4.5                          |
+| FR-008      | T2.1                                |
 
 ## Phase 1: Models (0.5 day)
 
@@ -2171,8 +2139,7 @@ exist.
 - [ ] updateStatus (the design's state machine)
 - [ ] batch reorder; automation outbox (TD-003)
 - [ ] creator-or-admin rule (FR-004)
-**Verification:** `pnpm test task.service` — every transition in
-the state diagram has a test
+**Verification:** `pnpm test task.service` — every transition in the state diagram has a test
 
 ### T2.2: SubtaskService
 **Estimate:** 2h · **Dependencies:** T1.1
@@ -2192,16 +2159,14 @@ the state diagram has a test
 ### T2.5: Routes
 **Estimate:** 3h · **Dependencies:** T2.1..T2.4
 - [ ] Endpoints with Zod; permission preHandler
-**Verification:** 403 for a MEMBER on someone else's task; 404
-cross-workspace
+**Verification:** 403 for a MEMBER on someone else's task; 404 cross-workspace
 
 ## Phase 3: Real-time (0.5 day)
 
 ### T3.1: Socket.io
 **Estimate:** 2h · **Dependencies:** —
 - [ ] Server + JWT auth middleware; rooms ws:{workspaceId}
-**Verification:** a connection with no token drops; a member joins
-only their own rooms
+**Verification:** a connection with no token drops; a member joins only their own rooms
 
 ### T3.2: Emitters
 **Estimate:** 2h · **Dependencies:** T3.1, T2.1
@@ -2254,9 +2219,7 @@ Automations are the product's differentiator — and its most dangerous spec. "W
 **Status:** requirements:approved
 
 ## Overview
-"When X happens, do Y" automations to reduce manual work. They run
-asynchronously, with an inspectable history and hard limits against
-loops.
+"When X happens, do Y" automations to reduce manual work. They run asynchronously, with an inspectable history and hard limits against loops.
 
 ## Out of Scope (v1)
 - No multi-step automations (chaining several actions) — v2
@@ -2287,60 +2250,48 @@ loops.
 - [ ] Which task triggered each execution
 
 ## Triggers (v1)
-| Trigger | Source event |
-|---------|-------------|
-| task_created | Task created |
-| task_completed | Task completed |
-| task_assigned | Task assigned |
-| task_overdue | Due date passed (daily job) |
-| tag_added | Tag added to a task |
+| Trigger        | Source event                |
+| -------------- | --------------------------- |
+| task_created   | Task created                |
+| task_completed | Task completed              |
+| task_assigned  | Task assigned               |
+| task_overdue   | Due date passed (daily job) |
+| tag_added      | Tag added to a task         |
 
 ## Actions (v1)
-| Action | Effect |
-|--------|--------|
-| create_task | Create a new task |
-| assign_task | Assign to a member |
-| add_tag | Add a tag |
+| Action            | Effect                        |
+| ----------------- | ----------------------------- |
+| create_task       | Create a new task             |
+| assign_task       | Assign to a member            |
+| add_tag           | Add a tag                     |
 | send_notification | Notify members (via spec 005) |
-| change_status | Change the task status |
+| change_status     | Change the task status        |
 
 ## Functional Requirements (EARS)
 
 ### FR-001 (Must Have)
-THE SYSTEM SHALL run automations asynchronously, via a persistent
-queue — never in the request that originated the event.
+THE SYSTEM SHALL run automations asynchronously, via a persistent queue — never in the request that originated the event.
 
 ### FR-002 (Must Have)
-THE SYSTEM SHALL prevent loops: at most depth 3 of chained
-automations, at most 5 executions per source event, and the same
-automation never executes twice in the same chain.
+THE SYSTEM SHALL prevent loops: at most depth 3 of chained automations, at most 5 executions per source event, and the same automation never executes twice in the same chain.
 
 ### FR-003 (Must Have)
-WHEN an execution fails, THE SYSTEM SHALL retry up to 3 times with
-exponential backoff and, once exhausted, record FAILED with the
-full error in the history.
+WHEN an execution fails, THE SYSTEM SHALL retry up to 3 times with exponential backoff and, once exhausted, record FAILED with the full error in the history.
 
 ### FR-004 (Must Have)
 IF the 11th automation is created in a workspace,
 THE SYSTEM SHALL reject with 422 "Automation limit of 10 reached".
 
 ### FR-005 (Should Have)
-THE SYSTEM SHALL evaluate conditions (tags, assignees, priority)
-before running the action, recording a SKIPPED execution when they
-do not match.
+THE SYSTEM SHALL evaluate conditions (tags, assignees, priority) before running the action, recording a SKIPPED execution when they do not match.
 
 ## Implementation FAQ
 
-**Q: Does an automation run on events produced by another
-automation?**
-A: Yes — that chaining is what FR-002 limits. The execution
-context travels with the whole chain.
+**Q: Does an automation run on events produced by another automation?**
+A: Yes — that chaining is what FR-002 limits. The execution context travels with the whole chain.
 
-**Q: What happens to in-flight executions when the automation is
-disabled?**
-A: Already-enqueued jobs run; new events do not enqueue. Disabling
-is not canceling — decision D-001, recorded so the UI communicates
-it ("pending executions will still complete").
+**Q: What happens to in-flight executions when the automation is disabled?**
+A: Already-enqueued jobs run; new events do not enqueue. Disabling is not canceling — decision D-001, recorded so the UI communicates it ("pending executions will still complete").
 
 **Q: Automation created by an admin who left the workspace?**
 A: Stays active (it belongs to the workspace, not the creator).
@@ -2367,11 +2318,20 @@ Action: assign_task -> dev@company.com
 ```
 
 ```mermaid
-flowchart LR
-    EVT[task_created event] --> OB[Outbox from spec 003]
-    OB --> BQ[BullMQ queue]
-    BQ --> PROC[Worker: find automations]
-    PROC --> COND{Conditions match?}
+---
+config:
+  flowchart:
+    rankSpacing: 30
+---
+flowchart TB
+    subgraph IN["Capture - spec 003"]
+        direction LR
+        EVT[task_created event] --> OB[Outbox row]
+        OB --> BQ[BullMQ queue]
+    end
+
+    IN --> PROC[Worker: find automations]
+    PROC --> COND{{Conditions match?}}
     COND -->|yes| EXEC[Run action]
     COND -->|no| SKIP[Record SKIPPED]
     EXEC --> LOG[Record execution]
@@ -2387,12 +2347,12 @@ flowchart LR
 ## Requirements Mapping
 
 | Requirement | Design decision |
-|-------------|-----------------|
-| FR-001 | Consume the outbox (TD-003 from spec 003) via BullMQ |
-| FR-002 | AutomationContext travels in the job payload (TD-001) |
-| FR-003 | BullMQ native retry + record in AutomationExecution |
-| FR-004 | Count in the creation transaction |
-| FR-005 | evaluateConditions pure, tested in isolation |
+| ----------- | --------------- |
+| FR-001      | Consume the outbox (TD-003 from spec 003) via BullMQ |
+| FR-002      | AutomationContext travels in the job payload (TD-001) |
+| FR-003      | BullMQ native retry + record in AutomationExecution |
+| FR-004      | Count in the creation transaction |
+| FR-005      | evaluateConditions pure, tested in isolation |
 
 ## Data Model
 
@@ -2514,16 +2474,11 @@ function canExecute(ctx: AutomationContext, automationId: string): boolean {
 
 ### TD-001: the context travels in the job, not in global state
 The AutomationContext is serialized into each chain job's payload.
-Considered alternative: track chains in Redis by correlationId —
-more flexible, but creates state outside the queue that can leak.
-The payload is self-contained and the limit is verifiable in a
-pure unit test.
+Considered alternative: track chains in Redis by correlationId — more flexible, but creates state outside the queue that can leak.
+The payload is self-contained and the limit is verifiable in a pure unit test.
 
 ### TD-002: trigger/action as versioned Json
-The trigger and action fields are Json with a type field — not
-typed columns. Reason: adding a new trigger in v2 must not require
-a migration. The cost (runtime validation via Zod) is paid once at
-the boundary.
+The trigger and action fields are Json with a type field — not typed columns. Reason: adding a new trigger in v2 must not require a migration. The cost (runtime validation via Zod) is paid once at the boundary.
 
 ## Edge Cases
 - Task deleted before the job runs -> SKIPPED execution with
@@ -2550,13 +2505,13 @@ the boundary.
 **Total estimate:** 2.5 days
 
 ## Coverage
-| Requirement | Tasks |
-|-------------|-------|
-| FR-001 | T1.4, T1.5 |
-| FR-002 | T1.3 |
-| FR-003 | T1.4 |
-| FR-004 | T1.2 |
-| FR-005 | T1.3 |
+| Requirement | Tasks      |
+| ----------- | ---------- |
+| FR-001      | T1.4, T1.5 |
+| FR-002      | T1.3       |
+| FR-003      | T1.4       |
+| FR-004      | T1.2       |
+| FR-005      | T1.3       |
 
 ## Phase 1: Backend (1.5 days)
 
@@ -2570,8 +2525,7 @@ the boundary.
 - [ ] create (limit of 10 in the transaction, FR-004),
       findByWorkspace, update, delete, toggle
 - [ ] Zod validation of the trigger/action Json (TD-002)
-**Verification:** `pnpm test automation.service` — the 11th
-creation fails with 422
+**Verification:** `pnpm test automation.service` — the 11th creation fails with 422
 
 ### T1.3: AutomationEngine
 **Estimate:** 5h · **Dependencies:** T1.1
@@ -2592,8 +2546,7 @@ A->B->A chain test
 **Estimate:** 2h · **Dependencies:** T1.4
 - [ ] Daily task_overdue job
 - [ ] Consume the outbox events from spec 003
-**Verification:** e2e: create a task with the "bug" tag -> the
-auto-assignee appears via a real-time event
+**Verification:** e2e: create a task with the "bug" tag -> the auto-assignee appears via a real-time event
 
 ## Phase 2: Frontend (1 day)
 
@@ -2628,9 +2581,7 @@ The MVP's last spec closes the loop: it **consumes** events from all the others 
 **Status:** requirements:approved
 
 ## Overview
-Real-time in-app notifications, with per-type preferences and an
-email option. Keeps users informed without overwhelming them —
-the user's preference always wins.
+Real-time in-app notifications, with per-type preferences and an email option. Keeps users informed without overwhelming them — the user's preference always wins.
 
 ## Out of Scope (v1)
 - No mobile/browser push — v2
@@ -2662,38 +2613,31 @@ the user's preference always wins.
 
 ## Notification Types (v1)
 
-| Type | Trigger | Recipient |
-|------|---------|-----------|
-| TASK_ASSIGNED | Task assigned | The assignee |
-| TASK_COMPLETED | Task completed | The creator (if not the completer) |
-| TASK_DUE_SOON | Due within 24h | The assignees |
-| TASK_OVERDUE | Overdue | The assignees |
-| WORKSPACE_INVITE | Invite received | The invitee |
-| AUTOMATION_EXECUTED | Automation ran | Admins (opt-in) |
+| Type                | Trigger         | Recipient |
+| ------------------- | --------------- | --------- |
+| TASK_ASSIGNED       | Task assigned   | The assignee |
+| TASK_COMPLETED      | Task completed  | The creator (if not the completer) |
+| TASK_DUE_SOON       | Due within 24h  | The assignees |
+| TASK_OVERDUE        | Overdue         | The assignees |
+| WORKSPACE_INVITE    | Invite received | The invitee |
+| AUTOMATION_EXECUTED | Automation ran  | Admins (opt-in) |
 
 ## Functional Requirements (EARS)
 
 ### FR-001 (Must Have)
-WHEN a notifiable event occurs, THE SYSTEM SHALL create the
-notification and deliver it in real time to a connected recipient
-in under 200ms.
+WHEN a notifiable event occurs, THE SYSTEM SHALL create the notification and deliver it in real time to a connected recipient in under 200ms.
 
 ### FR-002 (Must Have)
-THE SYSTEM SHALL respect the user's preferences BEFORE creating the
-notification: a disabled type generates no record, not merely a
-hidden one.
+THE SYSTEM SHALL respect the user's preferences BEFORE creating the notification: a disabled type generates no record, not merely a hidden one.
 
 ### FR-003 (Must Have)
-THE SYSTEM SHALL NOT notify the actor themselves ("you completed
-your own task" does not exist).
+THE SYSTEM SHALL NOT notify the actor themselves ("you completed your own task" does not exist).
 
 ### FR-004 (Must Have)
-WHERE the email channel is enabled for the type, THE SYSTEM SHALL
-send the email asynchronously (queue), never in the request.
+WHERE the email channel is enabled for the type, THE SYSTEM SHALL send the email asynchronously (queue), never in the request.
 
 ### FR-005 (Should Have)
-THE SYSTEM SHALL group unread notifications of the same type and
-task ("3 updates on Deploy v2"), keeping the detail in the history.
+THE SYSTEM SHALL group unread notifications of the same type and task ("3 updates on Deploy v2"), keeping the detail in the history.
 
 ## Non-Functional Requirements
 
@@ -2704,13 +2648,10 @@ task ("3 updates on Deploy v2"), keeping the detail in the history.
 ## Implementation FAQ
 
 **Q: What does an offline user get on reconnect?**
-A: The badge is recomputed from the database on load; the dropdown
-paginates from the database. Socket.io is an optimization, not the
-source of truth.
+A: The badge is recomputed from the database on load; the dropdown paginates from the database. Socket.io is an optimization, not the source of truth.
 
 **Q: Does TASK_DUE_SOON fire more than once for the same task?**
-A: No. One notification per (task, type, recipient) per due-date
-window — dedup in the daily job.
+A: No. One notification per (task, type, recipient) per due-date window — dedup in the daily job.
 
 **Q: A notification from a workspace the user was removed from?**
 A: Removed on leave (logical cascade on the member:removed event,
@@ -2731,38 +2672,35 @@ FR-004 from spec 002).
 ```mermaid
 flowchart TB
     subgraph SRC["Event sources"]
+        direction LR
         T[Tasks]
         A[Automations]
         W[Workspaces]
     end
 
-    subgraph NS["NotificationService"]
-        CHECK[Check preferences]
-        CREATE[Create notification]
-    end
+    CHECK[Check preferences]
+    CREATE[Create notification]
 
     subgraph DEL["Delivery"]
+        direction LR
         WS[Socket.io room user:id]
         EM[Email queue]
     end
 
-    T --> CHECK
-    A --> CHECK
-    W --> CHECK
+    SRC --> CHECK
     CHECK -->|enabled| CREATE
     CREATE --> WS
     CREATE -.->|if email on| EM
 
     class CHECK,CREATE accent;
     class WS,EM soft;
-    class T,A,W neutral;
 ```
 
 ```markdown
 ## Requirements Mapping
 
 | Requirement | Design decision |
-|-------------|-----------------|
+| ----------- | --------------- |
 | FR-001 | Per-user room user:{id}; synchronous create,
           post-commit delivery |
 | FR-002 | Preference check BEFORE the insert (TD-001) |
@@ -2857,15 +2795,11 @@ interface NotificationEvent {
 
 ### TD-001: preference checked on write, not on read
 Considered alternative: store everything and filter on display.
-Rejected: it violates FR-002 (the user disabled it; the data
-should not exist), inflates the table, and complicates the counter.
-Cost: changing a preference does not affect past notifications —
-accepted and documented in the UI.
+Rejected: it violates FR-002 (the user disabled it; the data should not exist), inflates the table, and complicates the counter.
+Cost: changing a preference does not affect past notifications — accepted and documented in the UI.
 
 ### TD-002: the source of truth is the database, not the socket
-The real-time event is a latency optimization. The badge and list
-always recover from the database (see FAQ). No notification exists
-only "in transit".
+The real-time event is a latency optimization. The badge and list always recover from the database (see FAQ). No notification exists only "in transit".
 
 ## Verification Strategy
 - Service: FR-002 (preference off -> zero record) and FR-003
@@ -2885,12 +2819,12 @@ only "in transit".
 **Total estimate:** 2 days
 
 ## Coverage
-| Requirement | Tasks |
-|-------------|-------|
-| FR-001 | T1.2, T1.4 |
-| FR-002, FR-003 | T1.2 |
-| FR-004 | T1.3 |
-| FR-005 | T2.1 |
+| Requirement    | Tasks      |
+| -------------- | ---------- |
+| FR-001         | T1.2, T1.4 |
+| FR-002, FR-003 | T1.2       |
+| FR-004         | T1.3       |
+| FR-005         | T2.1       |
 
 ## Phase 1: Backend (1 day)
 
@@ -2915,8 +2849,7 @@ only "in transit".
 ### T1.4: Source integration
 **Estimate:** 2h · **Dependencies:** T1.2
 - [ ] Hooks on the events from specs 002/003/004
-**Verification:** e2e: assign a task -> the assignee's badge goes
-up in real time; the assigner receives nothing
+**Verification:** e2e: assign a task -> the assignee's badge goes up in real time; the assigner receives nothing
 
 ## Phase 2: Frontend (1 day)
 
@@ -2956,12 +2889,9 @@ Anthropic is also specific about what a good spec contains: *"the most useful sp
 Anthropic publishes the prompt that turns an idea into a spec before a line of code exists:
 
 ```text
-I want to build [brief description]. Interview me in detail using
-the AskUserQuestion tool. Ask about technical implementation,
-UI/UX, edge cases, concerns, and tradeoffs. Don't ask obvious
-questions, dig into the hard parts I might not have considered.
-Keep interviewing until we've covered everything, then write a
-complete spec to SPEC.md.
+I want to build [brief description]. Interview me in detail using the AskUserQuestion tool. Ask about technical implementation,
+UI/UX, edge cases, concerns, and tradeoffs. Don't ask obvious questions, dig into the hard parts I might not have considered.
+Keep interviewing until we've covered everything, then write a complete spec to SPEC.md.
 ```
 
 Run this in a clean session. The agent pushes you on edge cases you have not considered. When it finishes, **open another clean session to implement** — the fresh context keeps the implementation focused on the spec, not on the conversation that produced it.
@@ -3020,12 +2950,9 @@ A concrete feature moving through the pipeline: `PATCH /users/me`, so an authent
 
 ```text
 WHEN an authenticated user sends PATCH /users/me,
-THE SYSTEM SHALL validate all provided fields before persisting
-any change.
+THE SYSTEM SHALL validate all provided fields before persisting any change.
 
-IF displayName is provided AND its length is less than 2 OR
-greater than 64, THE SYSTEM SHALL return 400 with
-"displayName must be 2 to 64 characters".
+IF displayName is provided AND its length is less than 2 OR greater than 64, THE SYSTEM SHALL return 400 with "displayName must be 2 to 64 characters".
 
 IF timezone is provided AND is not a valid IANA identifier,
 THE SYSTEM SHALL return 400 with "Invalid timezone identifier".
@@ -3045,7 +2972,7 @@ You review: it matches the PRD, no ambiguity. `.status` → `requirements:approv
 
 | Claim | Command | Verdict |
 |-------|---------|---------|
-| 401 with no token | `curl -X PATCH /users/me` | PASS |
+| 401 with no token | PATCH with no `Authorization` header | PASS |
 | 400 on 1-char displayName | PATCH with `displayName=x` | PASS |
 | 400 on invalid timezone | PATCH with `timezone=badzone` | PASS |
 | 403 on deactivated account | PATCH with a test header | PASS |
@@ -3079,9 +3006,7 @@ In Claude Code (and compatible agents like Pi), a skill is a `SKILL.md` file wit
 ---
 name: sdd-prd
 description: 'Creates or updates requirements.md for a feature. Use
-  when the conversation calls for defining WHAT and WHY: user
-  stories, acceptance criteria, EARS, NFRs, and negative scope. Do
-  not use for technical design or code.'
+  when the conversation calls for defining WHAT and WHY: user stories, acceptance criteria, EARS, NFRs, and negative scope. Do not use for technical design or code.'
 ---
 
 # SDD PRD / Requirements
@@ -3112,16 +3037,14 @@ The kit's full set covers the pipeline: `sdd-init` (structure), `sdd-steering` (
 The most effective pattern I know for SDD with agents is to split the work across three narrow sub-agents instead of asking one to do everything. **Each has one job and one constraint** — and the constraint is what makes the pattern work.
 
 ```mermaid
-flowchart LR
-    REQ[Requirements] --> ARC[Architect]
-    ARC --> DES[Design + Tasks]
-    DES --> IMP[Implementer]
-    IMP --> COD[Code + tests]
-    COD --> REV[Reviewer]
-    REV -->|gaps| IMP
+flowchart TB
+    REQ[requirements.md] --> ARC[Architect]
+    ARC -->|design + tasks| IMP[Implementer]
+    IMP -->|code + tests| REV[Reviewer]
+    REV -.->|gaps| IMP
 
     class ARC,IMP,REV accent;
-    class REQ,DES,COD neutral;
+    class REQ neutral;
 ```
 
 **Architect** — reads the PRD and all steering; produces `requirements.md` and `design.md`: data models, API contracts, choices with justification, and the traceability map.
@@ -3357,12 +3280,22 @@ The `.status` file is the gate — and solo, you read it yourself and that is en
 So you make it visible: a board where each column is an SDD stage. A card is a feature. The card moves when its gate is approved — **the approve is the move.**
 
 ```mermaid
-flowchart LR
-    B[Backlog] --> P[PRD in review]
-    P -->|PR approved| D[Design in review]
-    D -->|PR approved| T[Tasks in review]
-    T -->|tasks approved| E[Implementation]
-    E --> R[Review]
+flowchart TB
+    B[Backlog]
+
+    subgraph SPEC["Spec columns: an approved PR moves the card"]
+        direction LR
+        P[PRD review] -->|approved| D[Design review]
+        D -->|approved| T[Tasks review]
+    end
+
+    subgraph BUILD["Build columns"]
+        direction LR
+        E[Implementation] --> R[Review]
+    end
+
+    B --> SPEC
+    SPEC -->|tasks approved| BUILD
 
     class P,D,T accent;
     class B muted;
@@ -3553,8 +3486,7 @@ THE SYSTEM SHALL respond to [operation] in under [X]ms at p95
 for [load condition].
 
 ### NFR-002: Security
-THE SYSTEM SHALL [specific behavior, e.g. "validate a signed JWT
-on every mutation before any business logic"].
+THE SYSTEM SHALL [specific behavior, e.g. "validate a signed JWT on every mutation before any business logic"].
 
 ### NFR-003: Accessibility
 THE SYSTEM SHALL meet WCAG 2.1 AA for all new components.
@@ -3588,13 +3520,12 @@ A: [Who sees what, under which conditions]
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| [R-001] | Low/Med/High | Low/Med/High | [action] |
+| Risk    | Likelihood   | Impact       | Mitigation |
+| ------- | ------------ | ------------ | ---------- |
+| [R-001] | Low/Med/High | Low/Med/High | [action]   |
 
 ## Confirm before building
-Do not advance to design until you restate the FRs in your own
-words. If any criterion is ambiguous, ask first.
+Do not advance to design until you restate the FRs in your own words. If any criterion is ambiguous, ask first.
 ```
 
 ### Template: design.md
@@ -3610,17 +3541,16 @@ words. If any criterion is ambiguous, ask first.
 
 ## Requirements Mapping
 
-| Requirement | Decision / design section |
-|-------------|---------------------------|
-| FR-001 | [where and how it is satisfied] |
-| FR-002 | [...] |
+| Requirement | Decision / design section       |
+| ----------- | ------------------------------- |
+| FR-001      | [where and how it is satisfied] |
+| FR-002      | [...]                           |
 
 ## Architecture
 [Components/modules and responsibilities. A diagram if it helps.]
 
 ## Data Model
-[Schema with constraints. A business rule that fits in the
-database goes in the database.]
+[Schema with constraints. A business rule that fits in the database goes in the database.]
 
 ## API Contract
 [Endpoints, inputs, outputs, error codes.]
@@ -3662,8 +3592,8 @@ database goes in the database.]
 ## Coverage
 
 | Requirement | Tasks |
-|-------------|-------|
-| FR-001 | T1.1 |
+| ----------- | ----- |
+| FR-001      | T1.1  |
 
 ## Phase 1: [Name] ([time])
 
