@@ -22,7 +22,7 @@ English and Brazilian Portuguese. Comes with a ready-to-use SDD kit for Claude C
 ·
 [Ler (pt-BR)](BOOK.pt-BR.md)
 ·
-[Free PDF](https://felipefontoura.com/articles/what-is-spec-driven-development/?utm_source=github&utm_medium=repo-website&utm_campaign=sdd-book)
+[Free PDF](https://felipefontoura.com/get/sdd-book/?utm_source=github&utm_medium=repo-website&utm_campaign=sdd-book)
 ·
 [The SDD Kit](sdd-kit/)
 ·
@@ -163,7 +163,7 @@ Full details in [`sdd-kit/README.md`](sdd-kit/README.md) and Appendix B of the b
 
 Just want to read the source? Open [`BOOK.en.md`](BOOK.en.md) or
 [`BOOK.pt-BR.md`](BOOK.pt-BR.md) directly on GitHub — Mermaid diagrams and tables
-render natively. Prefer the typeset book? [**Download the free PDF**](https://felipefontoura.com/articles/what-is-spec-driven-development/?utm_source=github&utm_medium=repo-website&utm_campaign=sdd-book)
+render natively. Prefer the typeset book? [**Download the free PDF**](https://felipefontoura.com/get/sdd-book/?utm_source=github&utm_medium=repo-website&utm_campaign=sdd-book)
 (signup required). The PDF and EPUB are also sold on Amazon Kindle / KDP; this
 repository holds the Markdown source, not the finished ebook. Want your own copy
 from source? Build it locally (below).
