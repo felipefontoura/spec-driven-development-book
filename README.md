@@ -22,16 +22,15 @@ English and Brazilian Portuguese. Comes with a ready-to-use SDD kit for Claude C
 ·
 [Ler (pt-BR)](BOOK.pt-BR.md)
 ·
+[Free PDF](https://felipefontoura.com/articles/what-is-spec-driven-development/?utm_source=github&utm_medium=repo-website&utm_campaign=sdd-book)
+·
 [The SDD Kit](sdd-kit/)
 ·
 [Report Bug](https://github.com/felipefontoura/spec-driven-development-book/issues/new)
 ·
 [Request Feature](https://github.com/felipefontoura/spec-driven-development-book/issues/new)
 
-<img src=".github/assets/cover-en.png" alt="Spec-Driven Development — English cover" height="340">&nbsp;&nbsp;
-<img src=".github/assets/cover-pt-br.png" alt="Spec-Driven Development — Brazilian Portuguese cover" height="340">
-
-*Both covers are real, unretouched output of `bash kit/scripts/build.sh --all`.*
+<img src=".github/assets/book-en.png" alt="Spec-Driven Development — cover and sample pages" width="480">
 
 </div>
 
@@ -164,9 +163,10 @@ Full details in [`sdd-kit/README.md`](sdd-kit/README.md) and Appendix B of the b
 
 Just want to read the source? Open [`BOOK.en.md`](BOOK.en.md) or
 [`BOOK.pt-BR.md`](BOOK.pt-BR.md) directly on GitHub — Mermaid diagrams and tables
-render natively. The typeset **PDF and EPUB are sold on Amazon Kindle / KDP**;
-this repository holds the Markdown source, not the finished ebook. Want your own
-copy from source? Build it locally (below).
+render natively. Prefer the typeset book? [**Download the free PDF**](https://felipefontoura.com/articles/what-is-spec-driven-development/?utm_source=github&utm_medium=repo-website&utm_campaign=sdd-book)
+(signup required). The PDF and EPUB are also sold on Amazon Kindle / KDP; this
+repository holds the Markdown source, not the finished ebook. Want your own copy
+from source? Build it locally (below).
 
 Want to apply the method? Copy the [SDD Kit](#the-sdd-kit) into your project and
 run `/sdd-init`.
