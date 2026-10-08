@@ -8,9 +8,11 @@ name: Build book (PDF + EPUB + HTML)
 # that the site's /dl serves. PRs, main, tags and manual runs from any other
 # branch only validate. To release: merge into `stable`.
 # Upload is also skipped when the BOOK_S3_* secrets are not set.
-# The full HTML site (dist/html/<lang>/) is published the same way, under
+# The full HTML site is published the same way: browsable files under
 # <prefix>/latest/html/<lang>/ (aws s3 sync --delete, so pages removed from the
-# book disappear). How that prefix is served is up to the bucket/CDN in front of it.
+# book disappear) plus an offline copy, <prefix>/latest/book-<lang>-html.zip.
+# How the prefix is served is up to the bucket/CDN in front of it. The site is
+# noindex and robots.txt disallows everything: it is for reading, not search engines.
 # Build locally anytime: `bash kit/scripts/build.sh --all`.
 
 on:
@@ -66,9 +68,6 @@ jobs:
         if: steps.probe.outputs.present == 'true'
         env:
           SOURCE_MD: ${{ matrix.source }}
-          # Where the HTML site will be served (canonical/hreflang/sitemap), e.g.
-          # https://example.com/books/sdd — a repo variable; empty = relative only.
-          HTML_BASE_URL: ${{ vars.BOOK_HTML_BASE_URL }}
         run: bash kit/scripts/build.sh --all
 
       - name: Confirm the three outputs exist
@@ -79,6 +78,7 @@ jobs:
           test -f "dist/cover-${{ matrix.lang }}.png"
           test -f "dist/html/${{ matrix.lang }}/index.html"
           test -d "dist/html/${{ matrix.lang }}/pagefind"
+          test -f "dist/book-${{ matrix.lang }}-html.zip"
           echo "OK ${{ matrix.lang }}: PDF + EPUB + HTML + cover built (uploaded only from stable)"
 
       # Private bucket upload: only on the `stable` branch (a push to it, or a
@@ -116,9 +116,15 @@ jobs:
           fi
           args=()
           [[ -n "$ENDPOINT" ]] && args+=(--endpoint-url "$ENDPOINT")
-          for f in "book-$LANG_ID.pdf" "book-$LANG_ID.epub" "cover-$LANG_ID.png"; do
+          for f in "book-$LANG_ID.pdf" "book-$LANG_ID.epub" "book-$LANG_ID-html.zip" "cover-$LANG_ID.png"; do
             aws s3 cp "dist/$f" "s3://$BUCKET/$PREFIX/latest/$f" "${args[@]}" --only-show-errors
           done
-          # The HTML site: a folder, synced (not copied) so the bucket mirrors the build.
-          aws s3 sync "dist/html/$LANG_ID/" "s3://$BUCKET/$PREFIX/latest/html/$LANG_ID/" "${args[@]}" --delete --only-show-errors
-          echo "Published $LANG_ID (PDF, EPUB, cover, HTML) to the private bucket: $PREFIX/latest/"
+          # The HTML site as browsable files: a folder, synced (not copied) so the
+          # bucket mirrors the build. .wasm is uploaded separately with an explicit
+          # content type, since Pagefind's search loader needs application/wasm.
+          aws s3 sync "dist/html/$LANG_ID/" "s3://$BUCKET/$PREFIX/latest/html/$LANG_ID/" "${args[@]}" --delete --only-show-errors --exclude "*.wasm"
+          find "dist/html/$LANG_ID" -name '*.wasm' | while read -r w; do
+            rel="${w#dist/html/$LANG_ID/}"
+            aws s3 cp "$w" "s3://$BUCKET/$PREFIX/latest/html/$LANG_ID/$rel" "${args[@]}" --content-type application/wasm --only-show-errors
+          done
+          echo "Published $LANG_ID (PDF, EPUB, HTML zip, cover, HTML files) to the private bucket: $PREFIX/latest/"

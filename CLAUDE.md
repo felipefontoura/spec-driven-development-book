@@ -285,8 +285,11 @@ SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh   # force the English edition
 - The HTML site is checked by `kit/scripts/verify-html.mjs` (headings, tables,
   code blocks, diagrams and list items must match the Markdown tokens; every
   internal link and anchor must resolve). The build fails if it does not.
-- Optional `html` block in `book.config.json`: `baseUrl` (canonical, hreflang,
-  sitemap) and `chapters` (publish only some chapters, e.g. a free preview).
+- Optional `html` block in `book.config.json`: `downloadUrl` (adds a "Download"
+  link to the site header/landing) and `chapters` (publish only some chapters,
+  e.g. a free preview). The HTML edition is for reading, not search engines: every
+  page is `noindex, nofollow`, `robots.txt` disallows all, and there is no
+  sitemap/canonical/og/JSON-LD on purpose.
 
 ### Publishing targets
 
@@ -294,8 +297,9 @@ SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh   # force the English edition
 - **KDP Print** (paperback): upload `dist/book-pt-br.pdf` (6×9" interior) + a
   wraparound cover that wraps `dist/cover-pt-br.png` with a spine + back.
 - **HTML site**: CI syncs `dist/html/<lang>/` to `<prefix>/latest/html/<lang>/` on `stable`
-  (the full book; where it is served is decided by CI/the bucket, which can also
-  set `BOOK_HTML_BASE_URL` for canonical/hreflang/sitemap).
+  (the full book, as browsable files) and uploads an offline copy,
+  `<prefix>/latest/book-<lang>-html.zip`. Where the prefix is served is up to the
+  bucket/CDN in front of it.
 - **felipefontoura.com / direct**: ship the PDF + EPUB as a bundle. Do **not** enrol
   in KDP Select — its 90-day digital exclusivity blocks selling the EPUB
   anywhere else.
