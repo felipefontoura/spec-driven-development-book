@@ -285,8 +285,9 @@ SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh   # force the English edition
 - The HTML site is checked by `kit/scripts/verify-html.mjs` (headings, tables,
   code blocks, diagrams and list items must match the Markdown tokens; every
   internal link and anchor must resolve). The build fails if it does not.
-- Optional `html` block in `book.config.json`: `downloads` (direct links, e.g.
-  `/dl/sdd-book/{lang}/pdf`: a menu in the header and buttons on the landing page) and `chapters` (publish only some chapters,
+- Optional `html` block in `book.config.json`: `downloads` (per-language links; one
+  entry is a plain "Download" link, e.g. to the `/get` sign-up page with the offer
+  and UTMs; several become a menu) and `chapters` (publish only some chapters,
   e.g. a free preview). The HTML edition is for reading, not search engines: every
   page is `noindex, nofollow`, and there is no robots.txt, sitemap, canonical,
   og or JSON-LD on purpose.
