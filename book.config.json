@@ -54,5 +54,21 @@
         "Contact: felipefontoura.com/contact/?utm_source=sdd-book"
       ]
     }
+  },
+  "html": {
+    "downloads": {
+      "pt": [
+        {
+          "kind": "page",
+          "url": "https://felipefontoura.com/pt/get/sdd-book/feicjm/?utm_source=sdd-book-html&utm_medium=html-edition&utm_campaign=sdd-book"
+        }
+      ],
+      "en": [
+        {
+          "kind": "page",
+          "url": "https://felipefontoura.com/get/sdd-book/feicjm/?utm_source=sdd-book-html&utm_medium=html-edition&utm_campaign=sdd-book"
+        }
+      ]
+    }
   }
 }
