@@ -1,4 +1,4 @@
-name: Build book (PDF + EPUB)
+name: Build book (PDF + EPUB + HTML)
 
 # Every run builds both editions, so a broken book is caught on any branch or PR
 # and nothing leaves CI by default (no Actions artifacts, no release assets: the
@@ -8,6 +8,8 @@ name: Build book (PDF + EPUB)
 # that the site's /dl serves. PRs, main, tags and manual runs from any other
 # branch only validate. To release: merge into `stable`.
 # Upload is also skipped when the BOOK_S3_* secrets are not set.
+# The HTML site (dist/html/<lang>/) is built and verified here, but NOT uploaded
+# anywhere yet: where and how much of it to publish is a separate decision.
 # Build locally anytime: `bash kit/scripts/build.sh --all`.
 
 on:
@@ -59,7 +61,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: "false"
 
-      - name: Build PDF + EPUB + cover (validation only — not published)
+      - name: Build PDF + EPUB + HTML + cover (validation only — not published)
         if: steps.probe.outputs.present == 'true'
         env:
           SOURCE_MD: ${{ matrix.source }}
@@ -71,7 +73,9 @@ jobs:
           test -f "dist/book-${{ matrix.lang }}.pdf"
           test -f "dist/book-${{ matrix.lang }}.epub"
           test -f "dist/cover-${{ matrix.lang }}.png"
-          echo "OK ${{ matrix.lang }}: PDF + EPUB + cover built (kept private, not uploaded)"
+          test -f "dist/html/${{ matrix.lang }}/index.html"
+          test -d "dist/html/${{ matrix.lang }}/pagefind"
+          echo "OK ${{ matrix.lang }}: PDF + EPUB + HTML + cover built (kept private, not uploaded)"
 
       # Private bucket upload: only on the `stable` branch (a push to it, or a
       # manual run started from it). One place only: <prefix>/latest/<file>,
