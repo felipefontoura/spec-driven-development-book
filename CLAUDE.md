@@ -293,6 +293,9 @@ SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh   # force the English edition
 - **KDP digital**: upload `dist/book-pt-br.epub` + `dist/cover-pt-br.png`.
 - **KDP Print** (paperback): upload `dist/book-pt-br.pdf` (6×9" interior) + a
   wraparound cover that wraps `dist/cover-pt-br.png` with a spine + back.
+- **HTML site**: CI syncs `dist/html/<lang>/` to `<prefix>/latest/html/<lang>/` on `stable`
+  (the full book; where it is served is decided by CI/the bucket, which can also
+  set `BOOK_HTML_BASE_URL` for canonical/hreflang/sitemap).
 - **felipefontoura.com / direct**: ship the PDF + EPUB as a bundle. Do **not** enrol
   in KDP Select — its 90-day digital exclusivity blocks selling the EPUB
   anywhere else.

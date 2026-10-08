@@ -763,6 +763,8 @@ Três ou mais itens desmarcados? O agente vai adivinhar. E palpite em requiremen
 
 Uma boa spec leva de 30 a 90 minutos para uma feature típica. Esse tempo volta na primeira sessão de implementação: você o gasta em problemas de verdade difíceis, não depurando requisitos mal-entendidos.
 
+# PARTE II: NA PRÁTICA — TASKFLOW PRO
+
 ---
 
 ## Capítulo 5: O Projeto TaskFlow Pro
