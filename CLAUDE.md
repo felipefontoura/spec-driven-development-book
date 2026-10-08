@@ -287,7 +287,10 @@ SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh   # force the English edition
   internal link and anchor must resolve). The build fails if it does not.
 - Optional `html` block in `book.config.json`: `downloads` (per-language links; one
   entry is a plain "Download" link, e.g. to the `/get` sign-up page with the offer
-  and UTMs; several become a menu) and `chapters` (publish only some chapters,
+  and `?ref=sdd-book-read`; several become a menu). The edition is served from
+  felipefontoura.com, so its links to the site are on-site: `?ref=`, never
+  `utm_*` (an internal UTM overwrites GA4's session source; the site's
+  `tracking.md` rule). The PDF/EPUB contact link keeps its UTM: that is off-site and `chapters` (publish only some chapters,
   e.g. a free preview). The HTML edition is for reading, not search engines: every
   page is `noindex, nofollow`, and there is no robots.txt, sitemap, canonical,
   og or JSON-LD on purpose.
