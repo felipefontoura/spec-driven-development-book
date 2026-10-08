@@ -1,0 +1,78 @@
+# Credits the author of every merged PR in CONTRIBUTORS.md, with no manual step.
+# The contribution type is inferred from the files the PR touched.
+#
+# Security: runs on pull_request_target (needs write access for fork PRs) but
+# only checks out `main` and never executes anything from the PR itself.
+name: Contributors
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: contributors
+  cancel-in-progress: false
+
+jobs:
+  credit:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.type != 'Bot' &&
+      github.event.pull_request.user.login != github.repository_owner
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.number }}
+      LOGIN: ${{ github.event.pull_request.user.login }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Infer contribution types from changed files
+        id: types
+        run: |
+          types=""
+          while IFS=$'\t' read -r status file; do
+            case "$file" in
+              book.config.json) continue ;;
+              BOOK.*.md) [ "$status" = added ] && t=translation || t=doc ;;
+              sdd-kit/*) t=code ;;
+              .github/*|mise.toml) t=infra ;;
+              *) t=doc ;;
+            esac
+            case ",$types," in *",$t,"*) ;; *) types="${types:+$types,}$t" ;; esac
+          done < <(gh api --paginate "repos/${{ github.repository }}/pulls/$PR/files" \
+                     --jq '.[] | [.status, .filename] | @tsv')
+          echo "list=${types:-doc}" >> "$GITHUB_OUTPUT"
+
+      - name: Add contributor
+        env:
+          PRIVATE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TYPES: ${{ steps.types.outputs.list }}
+        run: |
+          npx --yes all-contributors-cli@6 add "$LOGIN" "$TYPES"
+          npx --yes all-contributors-cli@6 generate
+
+      - name: Commit through a PR
+        run: |
+          if git diff --quiet; then
+            echo "Nothing to update."
+            exit 0
+          fi
+          branch="bot/contributors-$PR"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add .all-contributorsrc CONTRIBUTORS.md
+          git commit -m "docs: credit @$LOGIN in CONTRIBUTORS.md (#$PR)"
+          git push origin "$branch"
+          url=$(gh pr create --base main --head "$branch" \
+                  --title "docs: credit @$LOGIN in CONTRIBUTORS.md" \
+                  --body "Automatic credit for #$PR.")
+          gh pr merge "$url" --squash --delete-branch
