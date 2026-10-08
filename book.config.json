@@ -56,6 +56,15 @@
     }
   },
   "html": {
-    "downloadUrl": "https://felipefontoura.com/get/sdd-book/?utm_source=sdd-book-html&utm_medium=html-edition&utm_campaign=sdd-book"
+    "downloads": [
+      {
+        "kind": "pdf",
+        "url": "https://felipefontoura.com/dl/sdd-book/{lang}/pdf"
+      },
+      {
+        "kind": "epub",
+        "url": "https://felipefontoura.com/dl/sdd-book/{lang}/epub"
+      }
+    ]
   }
 }
