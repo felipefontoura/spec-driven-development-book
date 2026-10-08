@@ -53,6 +53,31 @@
         "Trademarks mentioned (Claude, Claude Code, Cursor, GitHub Copilot, Next.js, Fastify, Prisma, and others) are property of their respective owners.",
         "Contact: felipefontoura.com/contact/?utm_source=sdd-book"
       ]
+    },
+    "es": {
+      "langTag": "es-ES",
+      "title": "Spec-Driven Development",
+      "subtitle": "La guía definitiva para construir software con agentes de IA",
+      "eyebrow": "Del método al código en producción",
+      "tocName": "Contenido",
+      "preambleTitle": "Por qué existe este libro",
+      "partsLabel": "Parte",
+      "appendixLabel": "Apéndice",
+      "description": "La guía definitiva de Spec-Driven Development: el método que llevó 13 apps a producción en 70 días, en solitario, con agentes de IA. Requirements, design y tasks en formato EARS, gates de aprobación y el antídoto al vibe coding.",
+      "cover": {
+        "title": "Spec-Driven Development",
+        "subtitle": "La guía definitiva para construir software con agentes de IA",
+        "label": "DEL MÉTODO AL CÓDIGO EN PRODUCCIÓN"
+      },
+      "copyright": [
+        "Copyright © 2026 Felipe Fontoura.",
+        "El texto de este libro se publica bajo la licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0). Puedes compartir y adaptar el texto, con atribución, para fines no comerciales y bajo la misma licencia. La venta de este libro, o de copias y obras derivadas, está reservada al autor. La portada, el título y la identidad visual no están cubiertos por esta licencia. Texto completo y código fuente:",
+        "github.com/felipefontoura/spec-driven-development-book",
+        "Primera edición: 2026. Publicación independiente.",
+        "Los ejemplos de código, especificaciones y el nombre del producto TaskFlow Pro son ficticios y se proporcionan con fines educativos.",
+        "Las marcas mencionadas (Claude, Claude Code, Cursor, GitHub Copilot, Next.js, Fastify, Prisma y otras) pertenecen a sus respectivos propietarios.",
+        "Contacto: felipefontoura.com/contact/?utm_source=sdd-book"
+      ]
     }
   },
   "html": {
