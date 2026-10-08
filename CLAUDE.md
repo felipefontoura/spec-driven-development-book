@@ -288,8 +288,8 @@ SOURCE_MD=BOOK.en.md bash kit/scripts/build.sh   # force the English edition
 - Optional `html` block in `book.config.json`: `downloads` (direct links, e.g.
   `/dl/sdd-book/{lang}/pdf`: a menu in the header and buttons on the landing page) and `chapters` (publish only some chapters,
   e.g. a free preview). The HTML edition is for reading, not search engines: every
-  page is `noindex, nofollow`, `robots.txt` disallows all, and there is no
-  sitemap/canonical/og/JSON-LD on purpose.
+  page is `noindex, nofollow`, and there is no robots.txt, sitemap, canonical,
+  og or JSON-LD on purpose.
 
 ### Publishing targets
 

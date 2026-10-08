@@ -12,7 +12,7 @@ name: Build book (PDF + EPUB + HTML)
 # <prefix>/latest/html/<lang>/ (aws s3 sync --delete, so pages removed from the
 # book disappear) plus an offline copy, <prefix>/latest/book-<lang>-html.zip.
 # How the prefix is served is up to the bucket/CDN in front of it. The site is
-# noindex and robots.txt disallows everything: it is for reading, not search engines.
+# noindex, with no robots.txt or sitemap: it is for reading, not search engines.
 # Build locally anytime: `bash kit/scripts/build.sh --all`.
 
 on:
